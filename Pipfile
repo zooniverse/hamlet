@@ -1,0 +1,37 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-pspec = "*"
+pytest-django = "*"
+pytest-mock = "*"
+pytest-pythonpath = "*"
+
+[packages]
+django = "*"
+celery = "*"
+oauthlib = "*"
+panoptes-client = ">=1.1.1"
+psycopg2-binary = "*"
+pytest = "*"
+redis = "*"
+gunicorn = "*"
+
+[requires]
+python_version = "3.7"
+
+[scripts]
+console = "python manage.py shell"
+create_local_db = "createdb -U halmet -O hamlet hamlet"
+drop_local_db = "dropdb -U hamlet hamlet"
+makemigrations = "python manage.py makemigrations"
+migrate = "python manage.py migrate"
+server = "bash -e ./start_server.sh"
+tests = "pytest --cov=hamlet"
+tree = "bash -c 'find . | grep -v git | grep -v cache'"
+#worker = "rm tmp/*.log && celery -A hamlet worker --loglevel=info --pidfile=tmp/%n.pid --logfile=tmp/%n%I.log"
+worker = "bash -c ./start_worker.sh"

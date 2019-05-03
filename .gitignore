@@ -102,3 +102,15 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# vscode
+.vscode/
+
+# postgres
+postgres_data/
+
+# tmp files
+tmp/
+
+# restframework support files
+hamlet/static/
