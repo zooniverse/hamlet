@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while ! nc -z postgres 5432; do
+while ! nc -z ${DB_HOST:-postgres} ${DB_PORT:-5432}; do
   echo Waiting for Postgres
   sleep 3
 done
