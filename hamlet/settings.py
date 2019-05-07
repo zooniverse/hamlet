@@ -20,10 +20,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%^y#%%ru2__e34ce7x8$wh4=!@pm5z+)(!xlrpzqvn*c96rv6*'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    '%^y#%%ru2__e34ce7x8$wh4=!@pm5z+)(!xlrpzqvn*c96rv6*',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -76,11 +79,11 @@ WSGI_APPLICATION = 'hamlet.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hamlet',
-        'USER': 'hamlet',
-        'PASSWORD': 'hamlet',
-        'HOST': 'postgres',
-        'PORT': 5432
+        'NAME': os.environ.get('DB_NAME', 'hamlet'),
+        'USER': os.environ.get('DB_USER', 'hamlet'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'hamlet'),
+        'HOST': os.environ.get('DB_HOST', 'postgres'),
+        'PORT': os.environ.get('DB_PORT', 5432),
     }
 }
 

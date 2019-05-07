@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamlet-staging-app
+  labels:
+    app: hamlet-staging-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hamlet-staging-app
+  template:
+    metadata:
+      labels:
+        app: hamlet-staging-app
+    spec:
+      containers:
+        - name: hamlet-staging-app
+          image: zooniverse/hamlet:__IMAGE_TAG__
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_HOST
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_NAME
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SECRET_KEY
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamlet-staging-celery
+  labels:
+    app: hamlet-staging-celery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hamlet-staging-celery
+  template:
+    metadata:
+      labels:
+        app: hamlet-staging-celery
+    spec:
+      containers:
+        - name: hamlet-staging-celery
+          image: zooniverse/hamlet:__IMAGE_TAG__
+          args: ["bash", "/app/docker/start_worker.sh"]
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_HOST
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: DB_NAME
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SECRET_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hamlet-staging
+spec:
+  selector:
+    app: hamlet-staging
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort
