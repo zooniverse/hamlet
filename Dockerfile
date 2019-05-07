@@ -18,6 +18,8 @@ COPY Pipfile.lock ./
 
 RUN pipenv install --system --dev
 
+COPY . .
+
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8080
