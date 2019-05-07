@@ -8,7 +8,7 @@ done
 echo Applying migrations
 python manage.py migrate --noinput
 
-if [ "$DJANGO_ENV" == "production" ]; then
+if [ "$DJANGO_ENV" == "production" ] || [ "$DJANGO_ENV" == "staging" ]; then
   if [ ! -d "hamlet/static" ]; then
     echo Generating static files
     python manage.py collectstatic

@@ -43,6 +43,8 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: SECRET_KEY
+            - name: DJANGO_ENV
+              value: staging
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -90,6 +92,8 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: SECRET_KEY
+            - name: DJANGO_ENV
+              value: staging
 ---
 apiVersion: v1
 kind: Service
