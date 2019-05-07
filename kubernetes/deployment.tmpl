@@ -63,7 +63,7 @@ spec:
       containers:
         - name: hamlet-staging-celery
           image: zooniverse/hamlet:__IMAGE_TAG__
-          args: ["bash", "/app/docker/start_worker.sh"]
+          args: ["bash", "/usr/src/app/start_worker.sh"]
           env:
             - name: DB_HOST
               valueFrom:
