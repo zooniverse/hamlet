@@ -26,12 +26,15 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'hamlet-staging.zooniverse.org',
     'hamlet.zooniverse.org',
 ]
+
+if DEBUG:
+    ALLOWED_HOSTS.append('localhost')
 
 
 # Application definition
@@ -43,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +64,9 @@ ROOT_URLCONF = 'hamlet.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR + '/templates/',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -108,6 +114,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'hamlet.zooniverse_auth.ZooniverseOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -127,3 +137,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SOCIAL_AUTH_ZOONIVERSE_KEY = os.environ.get(
+    'PANOPTES_APPLICATION_ID',
+    '',
+)
+SOCIAL_AUTH_ZOONIVERSE_SECRET = os.environ.get(
+    'PANOPTES_SECRET',
+    '',
+)
+
+LOGIN_URL = '/login/zooniverse/'
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'https://www.zooniverse.org/'
