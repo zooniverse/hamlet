@@ -138,6 +138,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
 SOCIAL_AUTH_ZOONIVERSE_KEY = os.environ.get(
     'PANOPTES_APPLICATION_ID',
     '',
