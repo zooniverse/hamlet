@@ -43,6 +43,16 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: SECRET_KEY
+            - name: PANOPTES_APPLICATION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: PANOPTES_APPLICATION_ID
+            - name: PANOPTES_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: PANOPTES_SECRET
             - name: DJANGO_ENV
               value: staging
 ---
@@ -92,6 +102,16 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: SECRET_KEY
+            - name: PANOPTES_APPLICATION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: PANOPTES_APPLICATION_ID
+            - name: PANOPTES_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: PANOPTES_SECRET
             - name: DJANGO_ENV
               value: staging
 ---
