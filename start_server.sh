@@ -11,7 +11,7 @@ python manage.py migrate --noinput
 if [ "$DJANGO_ENV" == "production" ] || [ "$DJANGO_ENV" == "staging" ]; then
   if [ ! -d "hamlet/static" ]; then
     echo Generating static files
-    python manage.py collectstatic
+    python manage.py collectstatic --clear --no-input
   fi
   echo Starting production server
   exec gunicorn hamlet.wsgi -b 0:8080
