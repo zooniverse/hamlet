@@ -22,6 +22,8 @@ services:
     links:
       - redis:redis
       - postgres:postgres
+    env_file:
+      - .env
 
   worker:
     build:
@@ -32,3 +34,5 @@ services:
     links:
       - redis:redis
       - postgres:postgres
+    env_file:
+      - .env

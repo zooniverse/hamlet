@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Hamlet</title>
+    </head>
+    <body>
+        <h1>Hamlet</h1>
+        <p>Welcome, {{ user.username }}!</p>
+        <h2>Subject sets</h2>
+        <ul>
+          {% for project in projects %}
+          <li>{{ project.display_name }}
+            <ul>
+              {% for subject_set in project.links.subject_sets %}
+              <li>{{ subject_set.display_name }}</li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endfor %}
+        </ul>
+
+    </body>
+</html>
