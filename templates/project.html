@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Hamlet</title>
+    </head>
+    <body>
+        <h1>Hamlet</h1>
+        <p>Downloads for <em>{{project.display_name}}</em>.</p>
+        <h2>Subject sets</h2>
+        <ul>
+          {% for subject_set in project.links.subject_sets %}
+          <li><a href="{% url 'subject_set' project.id subject_set.id %}">{{ subject_set.display_name }}</a></li>
+          {% endfor %}
+        </ul>
+        <h2>Workflows</h2>
+        <ul>
+          {% for workflow in project.links.workflows %}
+          <li>{{ workflow.display_name }}</li>
+          {% endfor %}
+        </ul>
+    </body>
+</html>

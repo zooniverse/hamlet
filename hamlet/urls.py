@@ -23,6 +23,12 @@ from hamlet import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('', include('social_django.urls', namespace='social')),
+    path('projects/<int:project_id>/', views.project, name='project'),
+    path(
+        'projects/<int:project_id>/subject-sets/<int:subject_set_id>/',
+        views.subject_set,
+        name='subject_set'
+    ),
     path('admin/', admin.site.urls),
     path('logout/', auth_views.LogoutView.as_view()),
 ]
