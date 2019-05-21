@@ -13,6 +13,7 @@ class ZooniverseOAuth2(BaseOAuth2):
     REVOKE_TOKEN_METHOD = 'GET'
     EXTRA_DATA = [
         ('expires_in', 'expires_in'),
+        ('refresh_token', 'refresh_token'),
     ]
 
     def get_user_details(self, response):
