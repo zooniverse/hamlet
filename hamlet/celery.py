@@ -12,7 +12,9 @@ from panoptes_client import Panoptes, SubjectSet
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hamlet.settings')
 django.setup()
 
-app = Celery('hamlet', broker='redis://redis', backend='redis://redis')
+from django.conf import settings
+
+app = Celery('hamlet', broker=settings.REDIS_URI, backend=settings.REDIS_URI)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

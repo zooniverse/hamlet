@@ -55,6 +55,8 @@ spec:
                   key: PANOPTES_SECRET
             - name: DJANGO_ENV
               value: staging
+            - name: REDIS_URI
+              value: "redis://hamlet-staging-redis"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -114,6 +116,8 @@ spec:
                   key: PANOPTES_SECRET
             - name: DJANGO_ENV
               value: staging
+            - name: REDIS_URI
+              value: "redis://hamlet-staging-redis"
 ---
 apiVersion: v1
 kind: Service
@@ -126,4 +130,59 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
+  type: NodePort
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: hamlet-staging-redis
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamlet-staging-redis
+  labels:
+    app: hamlet-staging-redis
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: hamlet-staging-redis
+  template:
+    metadata:
+      labels:
+        app: hamlet-staging-redis
+    spec:
+      containers:
+        - name: hamlet-staging-redis
+          image: redis
+          volumeMounts:
+          - name: hamlet-staging-redis-data
+            mountPath: "/data"
+      volumes:
+      - name: hamlet-staging-redis-data
+        persistentVolumeClaim:
+          claimName: hamlet-staging-redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hamlet-staging-redis
+spec:
+  selector:
+    app: hamlet-staging-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
   type: NodePort
