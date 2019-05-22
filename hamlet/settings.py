@@ -170,3 +170,5 @@ LOGGING = {
         },
     },
 }
+
+REDIS_URI = os.environ.get('REDIS_URI', 'redis://redis')
