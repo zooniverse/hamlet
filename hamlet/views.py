@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
-from panoptes_client import Panoptes, Project
+from panoptes_client import Panoptes, Project, SubjectSet, Workflow
 
 from .celery import subject_set_export
+from exports.models import SubjectSetExport
 
 
 @login_required
@@ -39,10 +40,22 @@ def project(request, project_id):
                 + timedelta(social.extra_data['expires_in'])
             )
 
+        subject_set_exports = []
+
+        for subject_set in SubjectSet.where(project_id=project_id):
+            subject_set_exports.append((
+                subject_set,
+                SubjectSetExport.objects.filter(
+                    subject_set_id=subject_set.id
+                ).order_by('-created'),
+            ))
+
         context = {
             'project': Project.find(
                 id=project_id,
             ),
+            'subject_set_exports': subject_set_exports,
+            'workflows': Workflow.where(project_id=project_id),
         }
 
         return render(request, 'project.html', context)
@@ -51,8 +64,9 @@ def project(request, project_id):
 @login_required
 def subject_set(request, subject_set_id, project_id):
     social = request.user.social_auth.get(provider='zooniverse')
+    export = SubjectSetExport.objects.create(subject_set_id=subject_set_id)
     subject_set_export.delay(
-        subject_set_id,
+        export.id,
         social.access_token,
         social.extra_data,
     )

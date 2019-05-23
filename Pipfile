@@ -21,6 +21,7 @@ pytest = "*"
 redis = "*"
 gunicorn = "*"
 social-auth-app-django = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
