@@ -27,6 +27,8 @@ spec:
     metadata:
       labels:
         app: hamlet-staging-app
+      annotations:
+        iam.amazonaws.com/role: hamlet
     spec:
       containers:
         - name: hamlet-staging-app
@@ -87,6 +89,8 @@ spec:
     metadata:
       labels:
         app: hamlet-staging-celery
+      annotations:
+        iam.amazonaws.com/role: hamlet
     spec:
       containers:
         - name: hamlet-staging-celery
