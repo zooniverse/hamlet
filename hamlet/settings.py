@@ -173,3 +173,21 @@ LOGGING = {
 }
 
 REDIS_URI = os.environ.get('REDIS_URI', 'redis://redis')
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', None)
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', None)
+AWS_STORAGE_BUCKET_NAME = os.environ.get(
+    'AWS_STORAGE_BUCKET_NAME',
+    'zooniverse-hamlet',
+)
+AWS_DEFAULT_ACL = None
+AWS_LOCATION = '{}/'.format(os.environ.get('DJANGO_ENV', 'development'))
+AWS_S3_OBJECT_PARAMETERS = {
+    'ContentDisposition': 'attachment',
+}
+
+TMP_STORAGE_PATH = os.environ.get(
+    'TMP_STORAGE_PATH',
+    os.path.join(BASE_DIR, 'tmp'),
+)

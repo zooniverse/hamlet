@@ -1,3 +1,17 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: hamlet-staging-export-tmp
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -118,6 +132,15 @@ spec:
               value: staging
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
+            - name: TMP_STORAGE_PATH
+              value: "/export-tmp"
+          volumeMounts:
+          - name: hamlet-staging-export-tmp
+            mountPath: "/export-tmp"
+      volumes:
+      - name: hamlet-staging-export-tmp
+        persistentVolumeClaim:
+          claimName: hamlet-staging-export-tmp
 ---
 apiVersion: v1
 kind: Service

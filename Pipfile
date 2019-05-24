@@ -22,6 +22,8 @@ redis = "*"
 gunicorn = "*"
 social-auth-app-django = "*"
 requests = "*"
+django-storages = "*"
+boto3 = "*"
 
 [requires]
 python_version = "3.7"

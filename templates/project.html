@@ -10,7 +10,7 @@
         <h2>Subject sets</h2>
         <ul>
           {% for subject_set, exports in subject_set_exports %}
-          <li><a href="{% url 'subject_set' project.id subject_set.id %}">{{ subject_set.display_name }}</a> {% if exports.0 %}({{ exports.0.get_status_display }}){% endif %}</li>
+          <li><a href="{% url 'subject_set' project.id subject_set.id %}">{{ subject_set.display_name }}</a> {% if exports.0 %}({{ exports.0.get_status_display }}){% endif %}{% if exports.0.csv %}&nbsp;&middot;&nbsp;<a href="{{ exports.0.csv.url }}">Download</a>{% endif %}</li>
           {% endfor %}
         </ul>
         <h2>Workflows</h2>

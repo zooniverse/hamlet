@@ -20,6 +20,7 @@ class SubjectSetExport(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    csv = models.FileField(upload_to='subject_sets/', null=True)
 
     def get_status_display(self):
         return TASK_STATUSES.get(self.status)
