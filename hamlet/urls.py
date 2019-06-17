@@ -29,6 +29,11 @@ urlpatterns = [
         views.subject_set,
         name='subject_set'
     ),
+    path(
+        'projects/<int:project_id>/workflows/<int:workflow_id>/',
+        views.workflow,
+        name='workflow'
+    ),
     path('admin/', admin.site.urls),
-    path('logout/', auth_views.LogoutView.as_view()),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

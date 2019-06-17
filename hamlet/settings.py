@@ -191,3 +191,8 @@ TMP_STORAGE_PATH = os.environ.get(
     'TMP_STORAGE_PATH',
     os.path.join(BASE_DIR, 'tmp'),
 )
+
+CAESAR_URL = os.environ.get(
+    'CAESAR_URL',
+    'https://caesar.zooniverse.org',
+)

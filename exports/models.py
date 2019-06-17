@@ -39,3 +39,17 @@ class MediaMetadata(models.Model):
     hash = models.CharField(max_length=32, null=True)
     filesize = models.IntegerField(null=True)
     url = models.URLField()
+
+class WorkflowExport(models.Model):
+    workflow_id = models.IntegerField()
+    status = models.CharField(
+        max_length=1,
+        choices=TASK_CHOICES,
+        default='p',
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    csv = models.FileField(upload_to='workflows/', null=True)
+
+    def get_status_display(self):
+        return TASK_STATUSES.get(self.status)
