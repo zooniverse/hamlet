@@ -25,6 +25,7 @@ from django.conf import settings
 from django.core.files import File
 
 from exports.models import SubjectSetExport, MediaMetadata, WorkflowExport
+from .zooniverse_auth import SocialPanoptes
 
 app = Celery('hamlet', broker=settings.REDIS_URI, backend=settings.REDIS_URI)
 
@@ -43,22 +44,13 @@ def subject_set_export(
     self,
     export_id,
     access_token,
-    extra_data,
 ):
     export = SubjectSetExport.objects.get(pk=export_id)
     export.status = 'r'
     export.save()
 
     try:
-        with Panoptes() as p:
-            p.bearer_token = access_token
-            p.logged_in = True
-            p.refresh_token = extra_data['refresh_token']
-            p.bearer_expires = (
-                    datetime.fromtimestamp(extra_data['auth_time'])
-                    + timedelta(extra_data['expires_in'])
-                )
-
+        with SocialPanoptes(bearer_token=access_token) as p:
             subject_set = SubjectSet.find(export.subject_set_id)
             for subject in subject_set.subjects:
                 for location in subject.locations:
@@ -155,7 +147,6 @@ def workflow_export(
     self,
     export_id,
     access_token,
-    extra_data,
     storage_prefix,
 ):
     export = WorkflowExport.objects.get(pk=export_id)
@@ -163,15 +154,7 @@ def workflow_export(
     export.save()
 
     try:
-        with Panoptes() as p:
-            p.bearer_token = access_token
-            p.logged_in = True
-            p.refresh_token = extra_data['refresh_token']
-            p.bearer_expires = (
-                    datetime.fromtimestamp(extra_data['auth_time'])
-                    + timedelta(extra_data['expires_in'])
-                )
-
+        with SocialPanoptes(bearer_token=access_token) as p:
             caesar_data_requests = requests.get(
                 "{}/workflows/{}/data_requests".format(
                     settings.CAESAR_URL,
