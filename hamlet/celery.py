@@ -239,7 +239,7 @@ def workflow_export(
 
             with open(out_f_name, 'rb') as out_f:
                 export.csv.save(
-                    'workflow-{}-export{}.tsv'.format(
+                    'workflow-{}-export{}.csv'.format(
                         export.workflow_id,
                         export.id,
                     ),
