@@ -4,6 +4,7 @@ import base64
 import csv
 import hashlib
 import os
+import re
 import tempfile
 
 from datetime import datetime, timedelta
@@ -228,7 +229,7 @@ def workflow_export(
                     csv_writer.writerow([
                         "gs://{}/{}".format(
                             storage_prefix,
-                            media_metadata['url'].split('/')[-1],
+                            re.sub(r'^https?://', '', media_metadata['url']),
                         ),
                         subject_consensus[media_metadata['subject_id']],
                     ])
