@@ -151,10 +151,8 @@ SOCIAL_AUTH_ZOONIVERSE_SECRET = os.environ.get(
     '',
 )
 
-LOGIN_URL = '/login/zooniverse/'
-
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = 'https://www.zooniverse.org/'
+LOGOUT_REDIRECT_URL = '/'
 
 LOGGING = {
     'version': 1,
