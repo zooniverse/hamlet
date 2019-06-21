@@ -46,7 +46,7 @@ def subject_set_export(
     access_token,
 ):
     export = SubjectSetExport.objects.get(pk=export_id)
-    export.status = 'r'
+    export.status = SubjectSetExport.RUNNING
     export.save()
 
     try:
@@ -63,7 +63,7 @@ def subject_set_export(
 
             update_subject_set_export_status.delay(export_id)
     except PanoptesAPIException:
-        export.status = 'f'
+        export.status = SubjectSetExport.FAILED
         export.save()
 
 
@@ -73,15 +73,19 @@ def update_subject_set_export_status(
     export_id,
 ):
     export = SubjectSetExport.objects.get(pk=export_id)
-    if export.mediametadata_set.filter(status='p').count() > 0:
+    if export.mediametadata_set.filter(
+        status=SubjectSetExport.PENDING,
+    ).count() > 0:
         update_subject_set_export_status.apply_async(
             args=(export_id,),
             countdown=10,
         )
         return
 
-    if export.mediametadata_set.filter(status='f').count() > 0:
-        export.status = 'f'
+    if export.mediametadata_set.filter(
+        status=SubjectSetExport.FAILED
+    ).count() > 0:
+        export.status = SubjectSetExport.FAILED
         export.save()
     else:
         write_subject_set_export.delay(export_id)
@@ -95,7 +99,7 @@ def fetch_media_metadata(self, media_metadata_id):
     try:
         r.raise_for_status()
     except requests.exceptions.HTTPError:
-        media_metadata.status = 'f'
+        media_metadata.status = MediaMetadata.FAILED
         media_metadata.save()
         return
 
@@ -104,7 +108,7 @@ def fetch_media_metadata(self, media_metadata_id):
         hashlib.md5(r.content).digest()
     ).decode()
 
-    media_metadata.status = 'c'
+    media_metadata.status = MediaMetadata.COMPLETE
     media_metadata.save()
 
 
@@ -136,7 +140,7 @@ def write_subject_set_export(self, export_id):
             File(out_f),
         )
     os.unlink(out_f_name)
-    export.status = 'c'
+    export.status = SubjectSetExport.COMPLETE
     export.save()
 
 class ExportFailure(Exception):
@@ -150,7 +154,7 @@ def workflow_export(
     storage_prefix,
 ):
     export = WorkflowExport.objects.get(pk=export_id)
-    export.status = 'r'
+    export.status = WorkflowExport.RUNNING
     export.save()
 
     try:
@@ -230,14 +234,14 @@ def workflow_export(
                 )
             os.unlink(out_f_name)
 
-            export.status = 'c'
+            export.status = WorkflowExport.COMPLETE
             export.save()
     except (
         ExportFailure,
         requests.exceptions.RequestException,
         PanoptesAPIException
     ):
-        export.status = 'f'
+        export.status = WorkflowExport.FAILED
         export.save()
         raise
 
