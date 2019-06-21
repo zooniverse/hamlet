@@ -154,6 +154,8 @@ SOCIAL_AUTH_ZOONIVERSE_SECRET = os.environ.get(
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
