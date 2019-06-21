@@ -15,14 +15,46 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
+
+from django.views.decorators.http import require_POST
+
+import social_django.views
 
 from hamlet import views
 
+
+# Copied from https://github.com/python-social-auth/social-app-django/issues/55
+social_urls = [
+     # authentication / association
+     re_path(
+         'login/(?P<backend>[^/]+)/$',
+         require_POST(social_django.views.auth),
+         name='begin'
+     ),
+     re_path(
+         r'^complete/(?P<backend>[^/]+)/$',
+         social_django.views.complete,
+         name='complete'
+     ),
+     # disconnection
+     re_path(
+         r'^disconnect/(?P<backend>[^/]+)/$',
+         social_django.views.disconnect,
+         name='disconnect'
+     ),
+     re_path(
+         r'^disconnect/(?P<backend>[^/]+)/(?P<association_id>\d+)/$',
+         social_django.views.disconnect,
+         name='disconnect_individual'
+     ),
+ ]
+
+
 urlpatterns = [
     path('', views.index, name='index'),
-    path('', include('social_django.urls', namespace='social')),
+    path('', include((social_urls, 'social'))),
     path('projects/<int:project_id>/', views.project, name='project'),
     path(
         'projects/<int:project_id>/subject-sets/<int:subject_set_id>/',
