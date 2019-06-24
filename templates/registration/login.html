@@ -1,14 +1,13 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Hamlet</title>
-    </head>
-    <body>
-        <h1>Hamlet</h1>
-        <form action="{% url 'social:begin' 'zooniverse' %}" method="post">
-            {% csrf_token %}
-            <p><input type="submit" value="Login with Zooniverse"></p>
-        </form>
-    </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Login &ndash; {{ block.super }}{% endblock %}
+
+
+{% block nav %}{% endblock %}
+
+{% block content %}
+    <form action="{% url 'social:begin' 'zooniverse' %}" method="post">
+        {% csrf_token %}
+        <p><input type="submit" value="Login with Zooniverse"></p>
+    </form>
+{% endblock %}

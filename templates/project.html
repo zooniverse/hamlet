@@ -1,32 +1,95 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Hamlet</title>
-    </head>
-    <body>
-        <h1>Hamlet</h1>
-        <p><a href="{% url 'index' %}">Back to projects list</a></p>
-        <p>Downloads for <em>{{project.display_name}}</em>.</p>
-        <h2>Subject sets</h2>
-        <ul>
-          {% for subject_set, exports in subject_set_exports %}
-          <li><a href="{% url 'subject_set' project.id subject_set.id %}">{{ subject_set.display_name }}</a> {% if exports.0 %}({{ exports.0.get_status_display }}){% endif %}{% if exports.0.csv %}&nbsp;&middot;&nbsp;<a href="{{ exports.0.csv.url }}">Download</a>{% endif %}</li>
-          {% endfor %}
-        </ul>
-        <h2>Workflows</h2>
-        <ul>
-          {% for workflow, exports in workflow_exports %}
-          <li>{{ workflow.display_name }}
-              <form action="{% url 'workflow' project.id workflow.id %}" method="post">
-                  {% csrf_token %}
-                  {{ workflow_export_form.as_p }}
-                  <input type="submit" value="Generate">
-              </form>
-              {% if exports.0 %}({{ exports.0.get_status_display }}){% endif %}{% if exports.0.csv %}&nbsp;&middot;&nbsp;<a href="{{ exports.0.csv.url }}">Download</a>{% endif %}</li>
-          {% endfor %}
-        </ul>
+{% extends "base.html" %}
 
-        <p><a href="{% url 'logout' %}">Logout</a></p>
-    </body>
-</html>
+{% block title %}{{ project.display_name }} &ndash; {{ block.super }}{% endblock %}
+
+{% block content %}
+    <script type"text/javascript">
+        function copyurl(field) {
+            field.select();
+            document.execCommand("copy");
+            var copystatus = document.createElement("span");
+            copystatus.innerHTML = 'Copied!';
+            field.parentNode.insertBefore(copystatus, field.nextSibling);
+            window.setTimeout(function() {
+                copystatus.parentNode.removeChild(copystatus);
+            }, 2000);
+        }
+    </script>
+    <h2>Downloads for <em>{{project.display_name}}</em></h2>
+
+    <h3>Instructions</h3>
+
+    <p>This page will allow you to generate exports in the correct format for
+    Google Cloud Storage and AutoML.<p>
+
+    <ol>
+        <li>
+            <h4>Generate subject set export</h4>
+            <p>You must generate an export for each subject set you'll be
+                working with, even if your images are not hosted by the
+                Zooniverse.</p>
+        </li>
+        <li>
+            <h4>Transfer images to Google Cloud Storage</h4>
+            <p>Copy the subject set export URL(s) below into <a
+                href="https://cloud.google.com/storage-transfer/docs/">Google
+                Cloud Storage's transfer service</a>, to copy your images into
+                the storage bucket you'll be using for AutoML.</p>
+        </li>
+        <li>
+            <h4>Perform a Caesar subject reductions export</h4>
+            <p>Please ensure you've already generated a subject reductions
+                export in <a href="https://caesar.zooniverse.org/">Caesar</a>
+                or the workflow export will fail. The "most likely" labels from
+                Caesar are what you'll use to train your AutoML model.</p>
+        <li>
+            <h4>Generate workflow labels export</h4>
+            <p>This will export your Caesar labels for each subject image.</p>
+            <p>Enter the URI of your storage bucket, starting with
+                <code><strong>gs://</strong></code> and without a slash at the
+                end.
+            <p>Note that any subjects that were not included in an export in
+                step 1 will not be included in this export.</p>
+        </li>
+        <li>
+            <h4>Generate AutoML model</h4>
+            <p>After you download your workflow export, upload it to Google
+                Cloud Storage in order to train your AutoML model.</p>
+        </li>
+    </ol>
+
+    <h3>Subject set export</h3>
+    <ul>
+        {% for subject_set, exports in subject_set_exports %}
+            <li>
+                <form action="{% url 'subject_set' project.id subject_set.id %}" method="post">
+                    {% csrf_token %}
+                    {{ subject_set.display_name }}: <input type="submit" value="Generate">
+                    {% if exports.0 %}
+                        &nbsp;&middot;&nbsp;
+                        {{ exports.0.get_status_display }}
+                    {% endif %}
+                    {% if exports.0.csv %}
+                      &nbsp;&middot;&nbsp;
+                      <a href="{{ exports.0.csv.url }}">Download</a>
+                      &nbsp;&middot;&nbsp;
+                      <input type="text" name="download-url" value="{{ exports.0.csv.url }}" readonly onclick="copyurl(this)">
+                    {% endif %}
+              </form>
+          </li>
+      {% endfor %}
+    </ul>
+
+    <h3>Workflow labels export</h3>
+    <ul>
+      {% for workflow, exports in workflow_exports %}
+      <li>{{ workflow.display_name }}
+          <form action="{% url 'workflow' project.id workflow.id %}" method="post">
+              {% csrf_token %}
+              {{ workflow_export_form.as_p }}
+              <input type="submit" value="Generate">
+          </form>
+          {% if exports.0 %}({{ exports.0.get_status_display }}){% endif %}{% if exports.0.csv %}&nbsp;&middot;&nbsp;<a href="{{ exports.0.csv.url }}">Download</a>{% endif %}</li>
+      {% endfor %}
+    </ul>
+{% endblock %}
