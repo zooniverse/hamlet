@@ -1,19 +1,14 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Hamlet</title>
-    </head>
-    <body>
-        <h1>Hamlet</h1>
-        <p>Welcome, {{ user.username }}!</p>
-        <h2>Projects</h2>
-        <ul>
-          {% for project in projects %}
-          <li><a href="{% url 'project' project.id %}">{{ project.display_name }}</a></li>
-          {% endfor %}
-        </ul>
+{% extends "base.html" %}
 
-        <p><a href="{% url 'logout' %}">Logout</a></p>
-    </body>
-</html>
+{% block title %}Projects &ndash; {{ block.super }}{% endblock %}
+
+{% block projnav %}{% endblock %}
+
+{% block content %}
+    <h2>Projects</h2>
+    <ul>
+      {% for project in projects %}
+      <li><a href="{% url 'project' project.id %}">{{ project.display_name }}</a></li>
+      {% endfor %}
+    </ul>
+{% endblock %}
