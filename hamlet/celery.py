@@ -46,10 +46,9 @@ def subject_set_export(
     access_token,
 ):
     export = SubjectSetExport.objects.get(pk=export_id)
-    export.status = SubjectSetExport.RUNNING
-    export.save()
-
     try:
+        export.status = SubjectSetExport.RUNNING
+        export.save()
         with SocialPanoptes(bearer_token=access_token) as p:
             subject_set = SubjectSet.find(export.subject_set_id)
             for subject in subject_set.subjects:
@@ -59,12 +58,17 @@ def subject_set_export(
                         subject_id=subject.id,
                         url=list(location.values())[0],
                     )
-                    fetch_media_metadata.delay(media_metadata.id)
+                    task_result = fetch_media_metadata.delay(media_metadata.id)
+                    media_metadata.celery_task = task_result.id
+                    media_metadata.save()
 
-            update_subject_set_export_status.delay(export_id)
-    except PanoptesAPIException:
+            task_result = update_subject_set_export_status.delay(export_id)
+            export.celery_task = task_result.id
+            export.save()
+    except:
         export.status = SubjectSetExport.FAILED
         export.save()
+        raise
 
 
 @app.task(bind=True)
@@ -73,75 +77,93 @@ def update_subject_set_export_status(
     export_id,
 ):
     export = SubjectSetExport.objects.get(pk=export_id)
-    if export.mediametadata_set.filter(
-        status=SubjectSetExport.PENDING,
-    ).count() > 0:
-        update_subject_set_export_status.apply_async(
-            args=(export_id,),
-            countdown=10,
+    try:
+        pending_metadata = export.mediametadata_set.filter(
+            status=MediaMetadata.PENDING,
         )
-        return
+        if pending_metadata.count() > 0:
+            for mediametadata in pending_metadata:
+                mediametadata.check_status()
+            task_result = update_subject_set_export_status.apply_async(
+                args=(export_id,),
+                countdown=10,
+            )
+            export.celery_task = task_result.id
+            export.save()
+            return
 
-    if export.mediametadata_set.filter(
-        status=SubjectSetExport.FAILED
-    ).count() > 0:
+        if export.mediametadata_set.filter(
+            status=SubjectSetExport.FAILED
+        ).count() > 0:
+            export.status = SubjectSetExport.FAILED
+            export.save()
+        else:
+            task_result = write_subject_set_export.delay(export_id)
+            export.celery_task = task_result.id
+            export.save()
+    except:
         export.status = SubjectSetExport.FAILED
         export.save()
-    else:
-        write_subject_set_export.delay(export_id)
+        raise
 
 
 @app.task(bind=True)
 def fetch_media_metadata(self, media_metadata_id):
     media_metadata = MediaMetadata.objects.get(pk=media_metadata_id)
-
-    r = requests.get(media_metadata.url)
     try:
+        media_metadata.status = MediaMetadata.RUNNING
+        media_metadata.save()
+
+        r = requests.get(media_metadata.url)
         r.raise_for_status()
-    except requests.exceptions.HTTPError:
+
+        media_metadata.filesize = len(r.content)
+        media_metadata.hash = base64.b64encode(
+            hashlib.md5(r.content).digest()
+        ).decode()
+
+        media_metadata.status = MediaMetadata.COMPLETE
+        media_metadata.save()
+    except:
         media_metadata.status = MediaMetadata.FAILED
         media_metadata.save()
-        return
-
-    media_metadata.filesize = len(r.content)
-    media_metadata.hash = base64.b64encode(
-        hashlib.md5(r.content).digest()
-    ).decode()
-
-    media_metadata.status = MediaMetadata.COMPLETE
-    media_metadata.save()
+        raise
 
 
 @app.task(bind=True)
 def write_subject_set_export(self, export_id):
     export = SubjectSetExport.objects.get(pk=export_id)
-    with tempfile.NamedTemporaryFile(
-        'w+',
-        encoding='utf-8',
-        dir=settings.TMP_STORAGE_PATH,
-        delete=False,
-    ) as out_f:
-        csv_writer = csv.writer(out_f, dialect='excel-tab')
-        csv_writer.writerow(['TsvHttpData-1.0'])
-        for media_metadata in export.mediametadata_set.all():
-            csv_writer.writerow([
-                media_metadata.url,
-                media_metadata.filesize,
-                media_metadata.hash,
-            ])
-        out_f.flush()
-        out_f_name = out_f.name
-    with open(out_f_name, 'rb') as out_f:
-        export.csv.save(
-            'subject-set-{}-export{}.tsv'.format(
-                export.subject_set_id,
-                export.id,
-            ),
-            File(out_f),
-        )
-    os.unlink(out_f_name)
-    export.status = SubjectSetExport.COMPLETE
-    export.save()
+    try:
+        with tempfile.NamedTemporaryFile(
+            'w+',
+            encoding='utf-8',
+            dir=settings.TMP_STORAGE_PATH,
+            delete=False,
+        ) as out_f:
+            csv_writer = csv.writer(out_f, dialect='excel-tab')
+            csv_writer.writerow(['TsvHttpData-1.0'])
+            for media_metadata in export.mediametadata_set.all():
+                csv_writer.writerow([
+                    media_metadata.url,
+                    media_metadata.filesize,
+                    media_metadata.hash,
+                ])
+            out_f.flush()
+            out_f_name = out_f.name
+        with open(out_f_name, 'rb') as out_f:
+            export.csv.save(
+                'subject-set-{}-export{}.tsv'.format(
+                    export.subject_set_id,
+                    export.id,
+                ),
+                File(out_f),
+            )
+        os.unlink(out_f_name)
+        export.status = SubjectSetExport.COMPLETE
+        export.save()
+    except:
+        export.status = SubjectSetExport.FAILED
+        raise
 
 class ExportFailure(Exception):
     pass
@@ -236,12 +258,7 @@ def workflow_export(
 
             export.status = WorkflowExport.COMPLETE
             export.save()
-    except (
-        ExportFailure,
-        requests.exceptions.RequestException,
-        PanoptesAPIException
-    ):
+    except:
         export.status = WorkflowExport.FAILED
         export.save()
         raise
-

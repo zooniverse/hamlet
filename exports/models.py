@@ -1,3 +1,4 @@
+from celery.result import AsyncResult
 from django.db import models
 
 
@@ -21,13 +22,21 @@ class StatusModel(models.Model):
         choices=TASK_CHOICES,
         default=PENDING,
     )
+    celery_task = models.UUIDField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
 
+    def check_status(self):
+        if self.status == self.PENDING and self.celery_task:
+            if AsyncResult(self.celery_task).failed():
+                self.status = self.FAILED
+                self.save()
+
     def get_status_display(self):
+        self.check_status()
         return StatusModel.TASK_STATUSES.get(self.status)
 
 

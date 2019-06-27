@@ -65,10 +65,12 @@ def project(request, project_id):
 def subject_set(request, subject_set_id, project_id):
     social = request.user.social_auth.get(provider='zooniverse')
     export = SubjectSetExport.objects.create(subject_set_id=subject_set_id)
-    subject_set_export.delay(
+    task_result = subject_set_export.delay(
         export.id,
         social.access_token,
     )
+    export.celery_task = task_result.id
+    export.save()
     return redirect('project', project_id=project_id)
 
 
@@ -79,9 +81,11 @@ def workflow(request, workflow_id, project_id):
     if form.is_valid():
         social = request.user.social_auth.get(provider='zooniverse')
         export = WorkflowExport.objects.create(workflow_id=workflow_id)
-        workflow_export.delay(
+        task_result = workflow_export.delay(
             export.id,
             social.access_token,
             form.cleaned_data['storage_prefix'],
         )
+        export.celery_task = task_result.id
+        export.save()
     return redirect('project', project_id=project_id)
