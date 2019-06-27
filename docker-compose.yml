@@ -48,3 +48,24 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
       - AWS_SECURITY_TOKEN=${AWS_SECURITY_TOKEN}
+
+  flower:
+    build:
+      context: .
+    command: celery -A hamlet flower --port=5555
+    volumes:
+      - ./:/usr/src/app
+    links:
+      - redis:redis
+      - postgres:postgres
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_SECURITY_TOKEN=${AWS_SECURITY_TOKEN}
+

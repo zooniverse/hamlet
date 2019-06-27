@@ -24,6 +24,7 @@ social-auth-app-django = "*"
 requests = "*"
 django-storages = "*"
 boto3 = "*"
+flower = "*"
 
 [requires]
 python_version = "3.7"
