@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 
@@ -28,6 +29,9 @@ def index(request):
 def project(request, project_id):
     social = request.user.social_auth.get(provider='zooniverse')
     with SocialPanoptes(bearer_token=social.access_token) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+
         subject_set_exports = []
 
         for subject_set in SubjectSet.where(project_id=project_id):
@@ -64,6 +68,9 @@ def project(request, project_id):
 @require_POST
 def subject_set(request, subject_set_id, project_id):
     social = request.user.social_auth.get(provider='zooniverse')
+    with SocialPanoptes(bearer_token=social.access_token) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
     export = SubjectSetExport.objects.create(subject_set_id=subject_set_id)
     task_result = subject_set_export.delay(
         export.id,
@@ -80,6 +87,9 @@ def workflow(request, workflow_id, project_id):
     form = WorkflowExportForm(request.POST)
     if form.is_valid():
         social = request.user.social_auth.get(provider='zooniverse')
+        with SocialPanoptes(bearer_token=social.access_token) as p:
+            if not p.collab_for_project(project_id):
+                raise PermissionDenied
         export = WorkflowExport.objects.create(workflow_id=workflow_id)
         task_result = workflow_export.delay(
             export.id,

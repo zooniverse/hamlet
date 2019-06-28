@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 
 from social_core.backends.oauth import BaseOAuth2
-from panoptes_client import Panoptes
+from panoptes_client import Panoptes, ProjectRole
 
 
 class ZooniverseOAuth2(BaseOAuth2):
@@ -16,10 +16,9 @@ class ZooniverseOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         with SocialPanoptes(bearer_token=response['access_token']) as p:
-            user = p.get('/me')[0]['users'][0]
             return {
-                'username': user['login'],
-                'email': user['email'],
+                'username': p.me['login'],
+                'email': p.me['email'],
             }
 
     def get_user_id(self, details, response):
@@ -51,8 +50,28 @@ class SocialPanoptes(Panoptes):
         )
         self.bearer_token = bearer_token
         self.logged_in = True
+        self._me = None
+
+    def collab_for_project(self, project_id):
+        for role in ProjectRole.where(
+            project_id=project_id,
+            user_id=self.me['id'],
+        ):
+            if (
+                'owner' in role.roles or
+                'collaborator' in role.roles
+            ):
+                return True
+        return False
+
 
     def get_bearer_token(self):
         # Don't attempt to check if the token is valid or to refresh it
         # social_core should handle this
         return self.bearer_token
+
+    @property
+    def me(self):
+        if not self._me:
+            self._me = self.get('/me')[0]['users'][0]
+        return self._me
