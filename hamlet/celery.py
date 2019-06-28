@@ -13,6 +13,7 @@ import django
 import requests
 
 from celery import Celery
+from celery.exceptions import MaxRetriesExceededError
 
 from panoptes_client import Panoptes, SubjectSet, Workflow
 from panoptes_client.panoptes import PanoptesAPIException
@@ -124,10 +125,13 @@ def fetch_media_metadata(self, media_metadata_id):
 
         media_metadata.status = MediaMetadata.COMPLETE
         media_metadata.save()
-    except:
-        media_metadata.status = MediaMetadata.FAILED
-        media_metadata.save()
-        raise
+    except Exception as e:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            media_metadata.status = MediaMetadata.FAILED
+            media_metadata.save()
+            raise e
 
 
 @app.task(bind=True)
@@ -158,15 +162,22 @@ def write_subject_set_export(self, export_id):
                 ),
                 File(out_f),
             )
-        os.unlink(out_f_name)
         export.status = SubjectSetExport.COMPLETE
         export.save()
-    except:
-        export.status = SubjectSetExport.FAILED
-        raise
+    except Exception as e:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = SubjectSetExport.FAILED
+            export.save()
+            raise e
+    finally:
+        os.unlink(out_f_name)
+
 
 class ExportFailure(Exception):
     pass
+
 
 @app.task(bind=True)
 def workflow_export(
@@ -254,11 +265,15 @@ def workflow_export(
                     ),
                     File(out_f),
                 )
-            os.unlink(out_f_name)
 
             export.status = WorkflowExport.COMPLETE
             export.save()
-    except:
-        export.status = WorkflowExport.FAILED
-        export.save()
-        raise
+    except Exception as e:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = WorkflowExport.FAILED
+            export.save()
+            raise e
+    finally:
+        os.unlink(out_f_name)
