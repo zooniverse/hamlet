@@ -60,10 +60,10 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:a2ceaa00724228a961ef6f97da60ab09f3161a76e2f3ae82a49be396ca1083fc",
-                "sha256:f049dbfe83423f5cf350a861861e7f904967dea5e142ec1a17c70c07f9fdb117"
+                "sha256:2943d87d6844813fff9b0b4e9d9fef223d5e211bd69235b650b2d65137f816b0",
+                "sha256:d4b280e7c312ffecda0f2519d8e41b69860eb5d72e8d737e7e3814a5153190c6"
             ],
-            "version": "==1.12.180"
+            "version": "==1.12.183"
         },
         "celery": {
             "hashes": [
@@ -177,11 +177,11 @@
         },
         "oauthlib": {
             "hashes": [
-                "sha256:0ce32c5d989a1827e3f1148f98b9085ed2370fc939bf524c9c851d8714797298",
-                "sha256:3e1e14f6cde7e5475128d30e97edc3bfb4dc857cb884d8714ec161fdbb3b358e"
+                "sha256:40a63637707e9163eda62d0f5345120c65e001a790480b8256448543c1f78f66",
+                "sha256:b4d99ae8ccfb7d33ba9591b59355c64eef5241534aa3da2e4c0435346b84bc8e"
             ],
             "index": "pypi",
-            "version": "==3.0.1"
+            "version": "==3.0.2"
         },
         "packaging": {
             "hashes": [
@@ -401,10 +401,10 @@
         },
         "zipp": {
             "hashes": [
-                "sha256:8c1019c6aad13642199fbe458275ad6a84907634cc9f0989877ccc4a2840139d",
-                "sha256:ca943a7e809cc12257001ccfb99e3563da9af99d52f261725e96dfe0f9275bc3"
+                "sha256:4970c3758f4e89a7857a973b1e2a5d75bcdc47794442f2e2dd4fe8e0466e809a",
+                "sha256:8a5712cfd3bb4248015eb3b0b3c54a5f6ee3f2425963ef2a0125b8bc40aafaec"
             ],
-            "version": "==0.5.1"
+            "version": "==0.5.2"
         }
     },
     "develop": {
@@ -563,10 +563,10 @@
         },
         "zipp": {
             "hashes": [
-                "sha256:8c1019c6aad13642199fbe458275ad6a84907634cc9f0989877ccc4a2840139d",
-                "sha256:ca943a7e809cc12257001ccfb99e3563da9af99d52f261725e96dfe0f9275bc3"
+                "sha256:4970c3758f4e89a7857a973b1e2a5d75bcdc47794442f2e2dd4fe8e0466e809a",
+                "sha256:8a5712cfd3bb4248015eb3b0b3c54a5f6ee3f2425963ef2a0125b8bc40aafaec"
             ],
-            "version": "==0.5.1"
+            "version": "==0.5.2"
         }
     }
 }
