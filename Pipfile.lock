@@ -60,10 +60,10 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:9448deffdb58e852935eeaae90682b7a0b4ef3c45eb6f17fa4444873f45f9ae6",
-                "sha256:d2ead76e77e7d0cd4c6bf9445e0ff54e279aee3c727eb30255b4ec327f956d22"
+                "sha256:0d6290f725a69a5950785fb058c2405e438674011eff7c11ce192b561b3c9aa6",
+                "sha256:e9452a8e48aea82157e846eb8ec2e8e57f52366ba3362ec5128ecff2c8b52e2f"
             ],
-            "version": "==1.12.200"
+            "version": "==1.12.205"
         },
         "celery": {
             "hashes": [
@@ -299,11 +299,11 @@
         },
         "redis": {
             "hashes": [
-                "sha256:22b8b0041989d9002c04907466bc737cb6c3f6a77196315cf29205e13220836b",
-                "sha256:73ced19326cb85f69eb0724005c3fc24eaf7a5b6c3b387bfb13e900e808078d0"
+                "sha256:45682ecf226c7611efe731974c4fa3390170ba045b9cdb26f0051114a5c2a68b",
+                "sha256:f2609a85e5f37f489ba3b5652e1175dc3711c4d7a7818c4f657615810afd23df"
             ],
             "index": "pypi",
-            "version": "==3.3.0"
+            "version": "==3.3.6"
         },
         "redo": {
             "hashes": [
