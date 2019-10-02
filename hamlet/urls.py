@@ -66,6 +66,11 @@ urlpatterns = [
         views.workflow,
         name='workflow'
     ),
+    path(
+        'subject-assistant/',
+        views.subject_assistant,
+        name='subject_assistant'
+    ),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
 ]

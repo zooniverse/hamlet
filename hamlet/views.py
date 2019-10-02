@@ -99,3 +99,11 @@ def workflow(request, workflow_id, project_id):
         export.celery_task = task_result.id
         export.save()
     return redirect('project', project_id=project_id)
+
+@login_required
+def subject_assistant(request):
+    context = {
+        'projects': Project.where(owner=request.user.username),
+    }
+  
+    return render(request, 'subject-assistant.html', context)
