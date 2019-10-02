@@ -4,4 +4,13 @@
 
 {% block content %}
   <h2>Subject Assistant</h2>
+
+  <h3>Subject set export</h3>
+    <ul>
+      {% for subject_set in subject_sets %}
+        <li>
+          {{ subject_set.id }} - {{ subject_set.display_name }}
+        </li>
+      {% endfor %}
+    </ul>
 {% endblock %}

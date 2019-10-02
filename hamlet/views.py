@@ -101,9 +101,25 @@ def workflow(request, workflow_id, project_id):
     return redirect('project', project_id=project_id)
 
 @login_required
-def subject_assistant(request):
-    context = {
-        'projects': Project.where(owner=request.user.username),
-    }
-  
-    return render(request, 'subject-assistant.html', context)
+def subject_assistant(request, project_id):
+    social = request.user.social_auth.get(provider='zooniverse')
+    with SocialPanoptes(bearer_token=social.access_token) as p:
+
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+
+        subject_sets = []
+
+        for subject_set in SubjectSet.where(project_id=project_id):
+            subject_sets.append((
+                subject_set
+            ))
+
+        context = {
+            'project': Project.find(
+                id=project_id,
+            ),
+            'subject_sets': subject_sets
+        }
+
+        return render(request, 'subject-assistant.html', context)

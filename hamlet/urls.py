@@ -67,7 +67,7 @@ urlpatterns = [
         name='workflow'
     ),
     path(
-        'subject-assistant/',
+        'subject-assistant/<int:project_id>/',
         views.subject_assistant,
         name='subject_assistant'
     ),
