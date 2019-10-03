@@ -6,11 +6,24 @@
   <h2>Subject Assistant</h2>
 
   <h3>Subject set export</h3>
-    <ul>
-      {% for subject_set, ml_subject_assistant_export in ml_subject_assistant_exports %}
-        <li>
-          {{ subject_set.id }} - {{ subject_set.display_name }}
-        </li>
-      {% endfor %}
-    </ul>
+  <ul>
+    {% for subject_set, data_export in ml_subject_assistant_exports %}
+      <li>
+        <form action="{% url 'ml_subject_assistant_export' project.id subject_set.id %}" method="post">
+          {% csrf_token %}
+          {{ subject_set.id }} - {{ subject_set.display_name }}: <input type="submit" value="Generate">
+          {% if exports.0 %}
+            &nbsp;&middot;&nbsp;
+            {{ exports.0.get_status_display }}
+          {% endif %}
+          {% if exports.0.csv %}
+            &nbsp;&middot;&nbsp;
+            <a href="{{ exports.0.csv.url }}">Download</a>
+            &nbsp;&middot;&nbsp;
+            <input type="text" name="download-url" value="{{ exports.0.csv.url }}" readonly>
+          {% endif %}
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
 {% endblock %}
