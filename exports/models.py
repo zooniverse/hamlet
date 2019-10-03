@@ -56,3 +56,7 @@ class MediaMetadata(StatusModel):
 class WorkflowExport(StatusModel):
     workflow_id = models.IntegerField()
     csv = models.FileField(upload_to='workflows/', null=True)
+
+class MLSubjectAssistantExport(StatusModel):
+    subject_set_id = models.IntegerField()
+    # csv = models.FileField(upload_to='ml_subject_assistant/', null=True)

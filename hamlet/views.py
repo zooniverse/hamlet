@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from panoptes_client import Panoptes, Project, SubjectSet, Workflow
 
 from exports.forms import WorkflowExportForm
-from exports.models import SubjectSetExport, WorkflowExport
+from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport
 from .celery import subject_set_export, workflow_export
 from .zooniverse_auth import SocialPanoptes
 
@@ -100,18 +100,19 @@ def workflow(request, workflow_id, project_id):
         export.save()
     return redirect('project', project_id=project_id)
 
+
 @login_required
-def subject_assistant(request, project_id):
+def ml_subject_assistant(request, project_id):
     social = request.user.social_auth.get(provider='zooniverse')
     with SocialPanoptes(bearer_token=social.access_token) as p:
 
         if not p.collab_for_project(project_id):
             raise PermissionDenied
 
-        subject_sets = []
+        ml_subject_set_exports = []
 
         for subject_set in SubjectSet.where(project_id=project_id):
-            subject_sets.append((
+            ml_subject_set_exports.append((
                 subject_set
             ))
 
@@ -119,7 +120,7 @@ def subject_assistant(request, project_id):
             'project': Project.find(
                 id=project_id,
             ),
-            'subject_sets': subject_sets
+            'ml_subject_set_exports': ml_subject_set_exports
         }
 
-        return render(request, 'subject-assistant.html', context)
+        return render(request, 'ml-subject-assistant.html', context)
