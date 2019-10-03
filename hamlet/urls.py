@@ -68,8 +68,13 @@ urlpatterns = [
     ),
     path(
         'subject-assistant/<int:project_id>/',
-        views.ml_subject_assistant,
-        name='ml_subject_assistant'
+        views.ml_subject_assistant_list,
+        name='ml_subject_assistant_list'
+    ),
+    path(
+        'subject-assistant/<int:project_id>/subject-sets/<int:subject_set_id>/',
+        views.ml_subject_assistant_export,
+        name='ml_subject_assistant_export'
     ),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),

@@ -102,25 +102,45 @@ def workflow(request, workflow_id, project_id):
 
 
 @login_required
-def ml_subject_assistant(request, project_id):
+def ml_subject_assistant_list(request, project_id):
     social = request.user.social_auth.get(provider='zooniverse')
     with SocialPanoptes(bearer_token=social.access_token) as p:
 
         if not p.collab_for_project(project_id):
             raise PermissionDenied
 
-        ml_subject_set_exports = []
+        ml_subject_assistant_exports = []
 
         for subject_set in SubjectSet.where(project_id=project_id):
-            ml_subject_set_exports.append((
-                subject_set
+            ml_subject_assistant_exports.append((
+                subject_set,
+                MLSubjectAssistantExport.objects.filter(
+                    subject_set_id=subject_set.id
+                ).order_by('-created'),
             ))
 
         context = {
             'project': Project.find(
                 id=project_id,
             ),
-            'ml_subject_set_exports': ml_subject_set_exports
+            'ml_subject_assistant_exports': ml_subject_assistant_exports
         }
 
         return render(request, 'ml-subject-assistant.html', context)
+
+
+@login_required
+@require_POST
+def ml_subject_assistant_export(request, subject_set_id, project_id):
+    social = request.user.social_auth.get(provider='zooniverse')
+    with SocialPanoptes(bearer_token=social.access_token) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+    export = MLSubjectAssistantExport.objects.create(subject_set_id=subject_set_id)
+    task_result = subject_set_export.delay(
+        export.id,
+        social.access_token,
+    )
+    export.celery_task = task_result.id
+    export.save()
+    return redirect('project', project_id=project_id)
