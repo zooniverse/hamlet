@@ -132,10 +132,13 @@ def ml_subject_assistant_list(request, project_id):
 @login_required
 @require_POST
 def ml_subject_assistant_export(request, subject_set_id, project_id):
+    # Check permissions
     social = request.user.social_auth.get(provider='zooniverse')
     with SocialPanoptes(bearer_token=social.access_token) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
+    
+    # Create data export
     export = MLSubjectAssistantExport.objects.create(subject_set_id=subject_set_id)
     task_result = subject_set_export.delay(
         export.id,
@@ -143,4 +146,4 @@ def ml_subject_assistant_export(request, subject_set_id, project_id):
     )
     export.celery_task = task_result.id
     export.save()
-    return redirect('project', project_id=project_id)
+    return redirect('subject_assistant', project_id=project_id)
