@@ -146,4 +146,4 @@ def ml_subject_assistant_export(request, subject_set_id, project_id):
     )
     export.celery_task = task_result.id
     export.save()
-    return redirect('subject_assistant', project_id=project_id)
+    return redirect('ml_subject_assistant_list', project_id=project_id)
