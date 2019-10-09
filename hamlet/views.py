@@ -10,7 +10,7 @@ from panoptes_client import Panoptes, Project, SubjectSet, Workflow
 
 from exports.forms import WorkflowExportForm
 from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport
-from .celery import subject_set_export, workflow_export
+from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft
 from .zooniverse_auth import SocialPanoptes
 
 
@@ -140,7 +140,7 @@ def ml_subject_assistant_export(request, subject_set_id, project_id):
     
     # Create data export
     export = MLSubjectAssistantExport.objects.create(subject_set_id=subject_set_id)
-    task_result = subject_set_export.delay(
+    task_result = ml_subject_assistant_export_to_microsoft.delay(
         export.id,
         social.access_token,
     )

@@ -25,7 +25,7 @@ django.setup()
 from django.conf import settings
 from django.core.files import File
 
-from exports.models import SubjectSetExport, MediaMetadata, WorkflowExport
+from exports.models import SubjectSetExport, MediaMetadata, WorkflowExport, MLSubjectAssistantExport
 from .zooniverse_auth import SocialPanoptes
 
 app = Celery('hamlet', broker=settings.REDIS_URI, backend=settings.REDIS_URI)
@@ -273,6 +273,115 @@ def workflow_export(
             self.retry(countdown=60)
         except MaxRetriesExceededError:
             export.status = WorkflowExport.FAILED
+            export.save()
+            raise e
+    finally:
+        os.unlink(out_f_name)
+
+
+@app.task(bind=True)
+def ml_subject_assistant_export_to_microsoft(
+    self,
+    export_id,
+    access_token,
+):
+    export = MLSubjectAssistantExport.objects.get(pk=export_id)
+    try:
+        export.status = MLSubjectAssistantExport.RUNNING
+        export.save()
+        with SocialPanoptes(bearer_token=access_token) as p:
+            subject_set = SubjectSet.find(export.subject_set_id)
+            for subject in subject_set.subjects:
+                for location in subject.locations:
+                    media_metadata = MediaMetadata.objects.create(
+                        export=export,
+                        subject_id=subject.id,
+                        url=list(location.values())[0],
+                    )
+                    task_result = fetch_media_metadata.delay(media_metadata.id)
+                    media_metadata.celery_task = task_result.id
+                    media_metadata.save()
+
+            task_result = update_ml_subject_assistant_export_status.delay(export_id)
+            export.celery_task = task_result.id
+            export.save()
+    except:
+        export.status = MLSubjectAssistantExport.FAILED
+        export.save()
+        raise
+
+
+@app.task(bind=True)
+def update_ml_subject_assistant_export_status(
+    self,
+    export_id,
+):
+    export = MLSubjectAssistantExport.objects.get(pk=export_id)
+    try:
+        pending_metadata = export.mediametadata_set.filter(
+            status=MediaMetadata.PENDING,
+        )
+        if pending_metadata.count() > 0:
+            for mediametadata in pending_metadata:
+                mediametadata.check_status()
+            task_result = update_ml_subject_assistant_export_status.apply_async(
+                args=(export_id,),
+                countdown=10,
+            )
+            export.celery_task = task_result.id
+            export.save()
+            return
+
+        if export.mediametadata_set.filter(
+            status=MLSubjectAssistantExport.FAILED
+        ).count() > 0:
+            export.status = MLSubjectAssistantExport.FAILED
+            export.save()
+        else:
+            task_result = write_ml_subject_assistant_export.delay(export_id)
+            export.celery_task = task_result.id
+            export.save()
+    except:
+        export.status = MLSubjectAssistantExport.FAILED
+        export.save()
+        raise
+
+
+@app.task(bind=True)
+def write_ml_subject_assistant_export(self, export_id):
+    export = MLSubjectAssistantExport.objects.get(pk=export_id)
+    try:
+        with tempfile.NamedTemporaryFile(
+            'w+',
+            encoding='utf-8',
+            dir=settings.TMP_STORAGE_PATH,
+            delete=False,
+        ) as out_f:
+            csv_writer = csv.writer(out_f, dialect='excel-tab')
+            csv_writer.writerow(['TsvHttpData-1.0'])
+            for media_metadata in export.mediametadata_set.all():
+                csv_writer.writerow([
+                    media_metadata.url,
+                    media_metadata.filesize,
+                    media_metadata.hash,
+                ])
+            out_f.flush()
+            out_f_name = out_f.name
+        with open(out_f_name, 'rb') as out_f:
+            export.csv.save(
+                'ml-subject-assistant-{}-export{}.tsv'.format(
+                    export.subject_set_id,
+                    export.id,
+                ),
+                File(out_f),
+            )
+        export.status = MLSubjectAssistantExport.COMPLETE
+        export.save()
+    except Exception as e:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = MLSubjectAssistantExport.FAILED
             export.save()
             raise e
     finally:
