@@ -12,15 +12,15 @@
         <form action="{% url 'ml_subject_assistant_export' project.id subject_set.id %}" method="post">
           {% csrf_token %}
           {{ subject_set.id }} - {{ subject_set.display_name }}: <input type="submit" value="Generate">
-          {% if exports.0 %}
+          {% if data_export.0 %}
             &nbsp;&middot;&nbsp;
-            {{ exports.0.get_status_display }}
+            {{ data_export.0.get_status_display }}
           {% endif %}
-          {% if exports.0.csv %}
+          {% if data_export.0.csv %}
             &nbsp;&middot;&nbsp;
-            <a href="{{ exports.0.csv.url }}">Download</a>
+            <a href="{{ data_export.0.csv.url }}">Download</a>
             &nbsp;&middot;&nbsp;
-            <input type="text" name="download-url" value="{{ exports.0.csv.url }}" readonly>
+            <input type="text" name="download-url" value="{{ data_export.0.csv.url }}" readonly>
           {% endif %}
         </form>
       </li>
