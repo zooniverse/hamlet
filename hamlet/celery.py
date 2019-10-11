@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import base64
 import csv
 import hashlib
+import json
 import os
 import re
 import tempfile
@@ -303,10 +304,42 @@ def ml_subject_assistant_export_to_microsoft(
             #         task_result = fetch_media_metadata.delay(media_metadata.id)
             #         media_metadata.celery_task = task_result.id
             #         media_metadata.save()
-
-            task_result = update_ml_subject_assistant_export_status.delay(export_id)
-            export.celery_task = task_result.id
-            export.save()
+            
+            # task_result = update_ml_subject_assistant_export_status.delay(export_id)
+            # export.celery_task = task_result.id
+            # export.save()
+            
+            print('+++\n--------------------------------------------------------------------------------')
+            
+            data = []
+            
+            for subject in subject_set.subjects:
+                
+                frame_id = 0
+                for location in subject.locations:
+                    image_url = list(location.values())[0]
+                    
+                    subject_metadata = {
+                        'project_id': '',
+                        'subject_set_id': str(export.subject_set_id),
+                        'subject_id': str(subject.id),
+                        'frame_id': str(frame_id)
+                    }
+                    
+                    item = []
+                    item.append(image_url)
+                    item.append(subject_metadata)
+                    
+                    print('...')
+                    print(item)
+                    
+                    frame_id += 1
+                    
+                    
+  # [ "https://panoptes-uploads.zooniverse.org/staging/subject_location/3eb45309-ad43-4819-abf1-59bf083e8154.jpeg",
+  # "{\"project_id\":\"1891\",\"workflow_id\":\"3352\",\"subject_id\":\"83481\",\"frame_id\":\"0\"}" ]
+            
+            print('+++\n--------------------------------------------------------------------------------')
     except:
         export.status = MLSubjectAssistantExport.FAILED
         export.save()
