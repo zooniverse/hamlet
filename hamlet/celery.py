@@ -320,7 +320,7 @@ def ml_subject_assistant_export_to_microsoft(
                     image_url = list(location.values())[0]
                     
                     subject_metadata = {
-                        'project_id': '',
+                        'project_id': str(subject_set.links.project.id),
                         'subject_set_id': str(export.subject_set_id),
                         'subject_id': str(subject.id),
                         'frame_id': str(frame_id)
@@ -328,16 +328,15 @@ def ml_subject_assistant_export_to_microsoft(
                     
                     item = []
                     item.append(image_url)
-                    item.append(subject_metadata)
+                    item.append(json.dumps(subject_metadata))
                     
                     print('...')
                     print(item)
                     
                     frame_id += 1
-                    
-                    
-  # [ "https://panoptes-uploads.zooniverse.org/staging/subject_location/3eb45309-ad43-4819-abf1-59bf083e8154.jpeg",
-  # "{\"project_id\":\"1891\",\"workflow_id\":\"3352\",\"subject_id\":\"83481\",\"frame_id\":\"0\"}" ]
+            
+            export.status = MLSubjectAssistantExport.COMPLETE
+            export.save()
             
             print('+++\n--------------------------------------------------------------------------------')
     except:
