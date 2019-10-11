@@ -280,22 +280,31 @@ def workflow_export(
         os.unlink(out_f_name)
 
 
+# Creates a JSON file which details all the image URLs in a Subject Set, along
+# with that image's associated Subject information. JSON will be of the format:
+#
+# [ [ "http://image.url/example.png",
+#     "{ \"subject_info\": \"is a stringified JSON object\" }" ],
+#   ... ]
+#
+# To be used with the Zooniverse ML Subject Assistant web app (https://github.com/zooniverse/zoo-ml-subject-assistant),
+# and the associated (and currently unnamed) Microsoft machine learning service.
+# ------------------------------------------------------------------------------
 @app.task(bind=True)
 def ml_subject_assistant_export_to_microsoft(
     self,
     export_id,
     access_token,
 ):
-    print('+++\n--------------------------------------------------------------------------------\n[ml_subject_assistant_export_to_microsoft]') # DEBUG
-  
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
+    data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
+    
+    # Retrieve all Subjects from a Subject Set
     try:
         export.status = MLSubjectAssistantExport.RUNNING
         export.save()
         with SocialPanoptes(bearer_token=access_token) as p:
             subject_set = SubjectSet.find(export.subject_set_id)
-            
-            data = []
             
             # Process each Subject
             for subject in subject_set.subjects:
@@ -319,141 +328,47 @@ def ml_subject_assistant_export_to_microsoft(
                     data.append(item)
                     
                     frame_id += 1
-            
-            # Write the data to a file
-            with tempfile.NamedTemporaryFile(
-                'w+',
-                encoding='utf-8',
-                dir=settings.TMP_STORAGE_PATH,
-                delete=False,
-            ) as out_f:
-                json.dump(data, out_f)
-                out_f.flush()
-                out_f_name = out_f.name
-
-            # Save the created file to the database
-            with open(out_f_name, 'rb') as out_f:
-                print('+++ out_f_name: ', out_f_name)  # DEBUG
-                print('+++ subject_set_id: ', export.subject_set_id)  # DEBUG
-                print('+++ export.id: ', export.id)  # DEBUG
-              
-                export.json.save(
-                    'ml-subject-assistant-{}-export{}.json'.format(
-                        export.subject_set_id,
-                        export.id,
-                    ),
-                    File(out_f),
-                )
-            
-            export.status = MLSubjectAssistantExport.COMPLETE
-            export.save()
-            
-            print('+++\n================================================================================')
+                    
     except:
         export.status = MLSubjectAssistantExport.FAILED
         export.save()
         raise
-
-
-@app.task(bind=True)
-def update_ml_subject_assistant_export_status(
-    self,
-    export_id,
-):
-    print('+++\n--------------------------------------------------------------------------------\n[update_ml_subject_assistant_export_status]') # DEBUG
-  
-    export = MLSubjectAssistantExport.objects.get(pk=export_id)
+    
+    # Write the data to a file
     try:
-        # pending_metadata = export.mediametadata_set.filter(
-        #     status=MediaMetadata.PENDING,
-        # )
-        # if pending_metadata.count() > 0:
-        #     for mediametadata in pending_metadata:
-        #         mediametadata.check_status()
-        #     task_result = update_ml_subject_assistant_export_status.apply_async(
-        #         args=(export_id,),
-        #         countdown=10,
-        #     )
-        #     export.celery_task = task_result.id
-        #     export.save()
-        #     return
-
-        # if export.mediametadata_set.filter(
-        #     status=MLSubjectAssistantExport.FAILED
-        # ).count() > 0:
-        #     export.status = MLSubjectAssistantExport.FAILED
-        #     export.save()
-        # else:
-        
-        task_result = write_ml_subject_assistant_export.delay(export_id)
-        export.celery_task = task_result.id
-        export.save()
-    except:
-        export.status = MLSubjectAssistantExport.FAILED
-        export.save()
-        raise
-
-
-@app.task(bind=True)
-def write_ml_subject_assistant_export(self, export_id):
-  
-    print('+++\n--------------------------------------------------------------------------------\n[write_ml_subject_assistant_export]') # DEBUG
-    export = MLSubjectAssistantExport.objects.get(pk=export_id)
-    try:
-        print('+++\n........................................\n[A]') # DEBUG
-      
+        # First create a temporary JSON file
         with tempfile.NamedTemporaryFile(
             'w+',
             encoding='utf-8',
             dir=settings.TMP_STORAGE_PATH,
             delete=False,
         ) as out_f:
-            print('+++\n........................................\n[B]') # DEBUG
-          
-            csv_writer = csv.writer(out_f, dialect='excel-tab')
-            csv_writer.writerow(['TsvHttpData-1.0'])
-            # for media_metadata in export.mediametadata_set.all():
-            #     csv_writer.writerow([
-            #         media_metadata.url,
-            #         media_metadata.filesize,
-            #         media_metadata.hash,
-            #     ])
+            json.dump(data, out_f)
             out_f.flush()
             out_f_name = out_f.name
-            
-        print('+++\n........................................\n[B]') # DEBUG
-        
+
+        # Save the created file to the database
         with open(out_f_name, 'rb') as out_f:
-            print('+++\n........................................\n[D]') # DEBUG
-            export.csv.save(
-                'ml-subject-assistant-{}-export{}.tsv'.format(
+            export.json.save(
+                'ml-subject-assistant-{}-export{}.json'.format(
                     export.subject_set_id,
                     export.id,
                 ),
                 File(out_f),
             )
-            
-        print('+++\n........................................\n[E]') # DEBUG
-        
+
+        # SUCCESS
         export.status = MLSubjectAssistantExport.COMPLETE
-        export.save()
+        export.save()              
+    
     except Exception as e:
-        print('+++\n........................................\n[ERR]') # DEBUG
-        print(e)
-        print('+++\n........................................\n[/ERR]') # DEBUG
-        
-        # TEMP: the following block is the full code
-        # try:
-        #     self.retry(countdown=60)
-        # except MaxRetriesExceededError:
-        #     export.status = MLSubjectAssistantExport.FAILED
-        #     export.save()
-        #     raise e
-        
-        # TEMP: the following block is for debug only
-        export.status = MLSubjectAssistantExport.FAILED
-        export.save()
-        raise e
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = MLSubjectAssistantExport.FAILED
+            export.save()
+            raise e
+    
     finally:
-        print('+++\n........................................\n[Z]') # DEBUG
         os.unlink(out_f_name)
+
