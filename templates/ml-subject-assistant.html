@@ -16,11 +16,11 @@
             &nbsp;&middot;&nbsp;
             {{ data_export.0.get_status_display }}
           {% endif %}
-          {% if data_export.0.csv %}
+          {% if data_export.0.json %}
             &nbsp;&middot;&nbsp;
-            <a href="{{ data_export.0.csv.url }}">Download</a>
+            <a href="{{ data_export.0.json.url }}">Download</a>
             &nbsp;&middot;&nbsp;
-            <input type="text" name="download-url" value="{{ data_export.0.csv.url }}" readonly>
+            <input type="text" name="download-url" value="{{ data_export.0.json.url }}" readonly>
           {% endif %}
         </form>
       </li>

@@ -294,32 +294,18 @@ def ml_subject_assistant_export_to_microsoft(
         export.save()
         with SocialPanoptes(bearer_token=access_token) as p:
             subject_set = SubjectSet.find(export.subject_set_id)
-            # for subject in subject_set.subjects:
-            #     for location in subject.locations:
-            #         media_metadata = MediaMetadata.objects.create(
-            #             export=export,
-            #             subject_id=subject.id,
-            #             url=list(location.values())[0],
-            #         )
-            #         task_result = fetch_media_metadata.delay(media_metadata.id)
-            #         media_metadata.celery_task = task_result.id
-            #         media_metadata.save()
-            
-            # task_result = update_ml_subject_assistant_export_status.delay(export_id)
-            # export.celery_task = task_result.id
-            # export.save()
-            
-            print('+++\n--------------------------------------------------------------------------------')
             
             data = []
             
+            # Process each Subject
             for subject in subject_set.subjects:
                 
+                # Create a data item for each image URL in the Subject
                 frame_id = 0
                 for location in subject.locations:
                     image_url = list(location.values())[0]
                     
-                    subject_metadata = {
+                    subject_information = {
                         'project_id': str(subject_set.links.project.id),
                         'subject_set_id': str(export.subject_set_id),
                         'subject_id': str(subject.id),
@@ -328,17 +314,41 @@ def ml_subject_assistant_export_to_microsoft(
                     
                     item = []
                     item.append(image_url)
-                    item.append(json.dumps(subject_metadata))
+                    item.append(json.dumps(subject_information))  # The subject's JSON information is stored as a string. Yes, really.
                     
-                    print('...')
-                    print(item)
+                    data.append(item)
                     
                     frame_id += 1
+            
+            # Write the data to a file
+            with tempfile.NamedTemporaryFile(
+                'w+',
+                encoding='utf-8',
+                dir=settings.TMP_STORAGE_PATH,
+                delete=False,
+            ) as out_f:
+                json.dump(data, out_f)
+                out_f.flush()
+                out_f_name = out_f.name
+
+            # Save the created file to the database
+            with open(out_f_name, 'rb') as out_f:
+                print('+++ out_f_name: ', out_f_name)  # DEBUG
+                print('+++ subject_set_id: ', export.subject_set_id)  # DEBUG
+                print('+++ export.id: ', export.id)  # DEBUG
+              
+                export.json.save(
+                    'ml-subject-assistant-{}-export{}.json'.format(
+                        export.subject_set_id,
+                        export.id,
+                    ),
+                    File(out_f),
+                )
             
             export.status = MLSubjectAssistantExport.COMPLETE
             export.save()
             
-            print('+++\n--------------------------------------------------------------------------------')
+            print('+++\n================================================================================')
     except:
         export.status = MLSubjectAssistantExport.FAILED
         export.save()
