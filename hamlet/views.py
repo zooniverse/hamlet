@@ -103,6 +103,8 @@ def workflow(request, workflow_id, project_id):
 
 @login_required
 def ml_subject_assistant_list(request, project_id):
+    """List Page: shows all Subject Sets for a specific Project."""
+  
     social = request.user.social_auth.get(provider='zooniverse')
     with SocialPanoptes(bearer_token=social.access_token) as p:
 
@@ -132,6 +134,8 @@ def ml_subject_assistant_list(request, project_id):
 @login_required
 @require_POST
 def ml_subject_assistant_export(request, subject_set_id, project_id):
+    """Export Action: sets up a Subject Set to be exported to a machine learning server."""
+  
     # Check permissions
     social = request.user.social_auth.get(provider='zooniverse')
     with SocialPanoptes(bearer_token=social.access_token) as p:

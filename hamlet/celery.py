@@ -280,22 +280,26 @@ def workflow_export(
         os.unlink(out_f_name)
 
 
-# Creates a JSON file which details all the image URLs in a Subject Set, along
-# with that image's associated Subject information. JSON will be of the format:
-#
-# [ [ "http://image.url/example.png",
-#     "{ \"subject_info\": \"is a stringified JSON object\" }" ],
-#   ... ]
-#
-# To be used with the Zooniverse ML Subject Assistant web app (https://github.com/zooniverse/zoo-ml-subject-assistant),
-# and the associated (and currently unnamed) Microsoft machine learning service.
-# ------------------------------------------------------------------------------
 @app.task(bind=True)
 def ml_subject_assistant_export_to_microsoft(
     self,
     export_id,
     access_token,
 ):
+    r"""Export a 'subject manifest' for the Microsoft ML server.
+    
+    Creates a JSON file which details all the image URLs in a Subject Set, along
+    with that image's associated Subject information. JSON will be formatted so:
+    
+    [ [ "http://image.url/example.png",
+       "{ \"subject_info\": \"is a stringified JSON object\" }" ],
+      ... ]
+    
+    To be used with the Zooniverse ML Subject Assistant web app (https://github.com/zooniverse/zoo-ml-subject-assistant),
+    and the associated (and currently unnamed) Microsoft machine learning
+    service.
+    """
+    
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
     data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
     
