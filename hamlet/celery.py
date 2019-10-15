@@ -314,8 +314,7 @@ def ml_subject_assistant_export_to_microsoft(
             for subject in subject_set.subjects:
                 
                 # Create a data item for each image URL in the Subject
-                frame_id = 0
-                for location in subject.locations:
+                for frame_id, location in enumerate(subject.locations):
                     image_url = list(location.values())[0]
                     
                     subject_information = {
@@ -330,8 +329,6 @@ def ml_subject_assistant_export_to_microsoft(
                     item.append(json.dumps(subject_information))  # The subject's JSON information is stored as a string. Yes, really.
                     
                     data.append(item)
-                    
-                    frame_id += 1
                     
     except:
         export.status = MLSubjectAssistantExport.FAILED
