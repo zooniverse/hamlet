@@ -8,16 +8,22 @@ from django.views.decorators.http import require_POST
 
 from panoptes_client import Panoptes, Project, SubjectSet, Workflow
 
+from social_django.utils import load_strategy
+
 from exports.forms import WorkflowExportForm
 from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport
 from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft
 from .zooniverse_auth import SocialPanoptes
 
 
+def social_context(request):
+    social = request.user.social_auth.get(provider='zooniverse')
+    return SocialPanoptes(bearer_token=social.get_access_token(load_strategy()))
+
+
 @login_required
 def index(request):
-    social = request.user.social_auth.get(provider='zooniverse')
-    with SocialPanoptes(bearer_token=social.access_token) as p:
+    with social_context(request) as p:
         context = {
             'projects': Project.where(owner=request.user.username),
         }
@@ -27,8 +33,7 @@ def index(request):
 
 @login_required
 def project(request, project_id):
-    social = request.user.social_auth.get(provider='zooniverse')
-    with SocialPanoptes(bearer_token=social.access_token) as p:
+    with social_context(request) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
 
@@ -67,17 +72,16 @@ def project(request, project_id):
 @login_required
 @require_POST
 def subject_set(request, subject_set_id, project_id):
-    social = request.user.social_auth.get(provider='zooniverse')
-    with SocialPanoptes(bearer_token=social.access_token) as p:
+    with social_context(request) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
-    export = SubjectSetExport.objects.create(subject_set_id=subject_set_id)
-    task_result = subject_set_export.delay(
-        export.id,
-        social.access_token,
-    )
-    export.celery_task = task_result.id
-    export.save()
+        export = SubjectSetExport.objects.create(subject_set_id=subject_set_id)
+        task_result = subject_set_export.delay(
+            export.id,
+            p.bearer_token,
+        )
+        export.celery_task = task_result.id
+        export.save()
     return redirect('project', project_id=project_id)
 
 
@@ -86,18 +90,18 @@ def subject_set(request, subject_set_id, project_id):
 def workflow(request, workflow_id, project_id):
     form = WorkflowExportForm(request.POST)
     if form.is_valid():
-        social = request.user.social_auth.get(provider='zooniverse')
-        with SocialPanoptes(bearer_token=social.access_token) as p:
+        with social_context(request) as p:
             if not p.collab_for_project(project_id):
                 raise PermissionDenied
-        export = WorkflowExport.objects.create(workflow_id=workflow_id)
-        task_result = workflow_export.delay(
-            export.id,
-            social.access_token,
-            form.cleaned_data['storage_prefix'],
-        )
-        export.celery_task = task_result.id
-        export.save()
+            access_token = p.bearer_token
+            export = WorkflowExport.objects.create(workflow_id=workflow_id)
+            task_result = workflow_export.delay(
+                export.id,
+                p.bearer_token,
+                form.cleaned_data['storage_prefix'],
+            )
+            export.celery_task = task_result.id
+            export.save()
     return redirect('project', project_id=project_id)
 
 
@@ -105,9 +109,7 @@ def workflow(request, workflow_id, project_id):
 def ml_subject_assistant_list(request, project_id):
     """List Page: shows all Subject Sets for a specific Project."""
   
-    social = request.user.social_auth.get(provider='zooniverse')
-    with SocialPanoptes(bearer_token=social.access_token) as p:
-
+    with social_context(request) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
 
@@ -137,17 +139,18 @@ def ml_subject_assistant_export(request, subject_set_id, project_id):
     """Export Action: sets up a Subject Set to be exported to a machine learning server."""
   
     # Check permissions
-    social = request.user.social_auth.get(provider='zooniverse')
-    with SocialPanoptes(bearer_token=social.access_token) as p:
+    with social_context(request) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
     
-    # Create data export
-    export = MLSubjectAssistantExport.objects.create(subject_set_id=subject_set_id)
-    task_result = ml_subject_assistant_export_to_microsoft.delay(
-        export.id,
-        social.access_token,
-    )
-    export.celery_task = task_result.id
-    export.save()
+        # Create data export
+        export = MLSubjectAssistantExport.objects.create(
+            subject_set_id=subject_set_id,
+        )
+        task_result = ml_subject_assistant_export_to_microsoft.delay(
+            export.id,
+            p.bearer_token,
+        )
+        export.celery_task = task_result.id
+        export.save()
     return redirect('ml_subject_assistant_list', project_id=project_id)

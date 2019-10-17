@@ -53,6 +53,9 @@ class SocialPanoptes(Panoptes):
         self._me = None
 
     def collab_for_project(self, project_id):
+        if not self.me:
+            return False
+
         for role in ProjectRole.where(
             project_id=project_id,
             user_id=self.me['id'],
@@ -73,5 +76,8 @@ class SocialPanoptes(Panoptes):
     @property
     def me(self):
         if not self._me:
-            self._me = self.get('/me')[0]['users'][0]
+            try:
+                self._me = self.get('/me')[0]['users'][0]
+            except TypeError:
+                pass
         return self._me
