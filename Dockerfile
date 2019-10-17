@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.7
 
 LABEL maintainer="contact@zooniverse.org"
 
