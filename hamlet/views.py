@@ -9,8 +9,8 @@ from django.views.decorators.http import require_POST
 from panoptes_client import Panoptes, Project, SubjectSet, Workflow
 
 from exports.forms import WorkflowExportForm
-from exports.models import SubjectSetExport, WorkflowExport
-from .celery import subject_set_export, workflow_export
+from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport
+from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft
 from .zooniverse_auth import SocialPanoptes
 
 
@@ -99,3 +99,55 @@ def workflow(request, workflow_id, project_id):
         export.celery_task = task_result.id
         export.save()
     return redirect('project', project_id=project_id)
+
+
+@login_required
+def ml_subject_assistant_list(request, project_id):
+    """List Page: shows all Subject Sets for a specific Project."""
+  
+    social = request.user.social_auth.get(provider='zooniverse')
+    with SocialPanoptes(bearer_token=social.access_token) as p:
+
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+
+        ml_subject_assistant_exports = []
+
+        for subject_set in SubjectSet.where(project_id=project_id):
+            ml_subject_assistant_exports.append((
+                subject_set,
+                MLSubjectAssistantExport.objects.filter(
+                    subject_set_id=subject_set.id
+                ).order_by('-created'),
+            ))
+
+        context = {
+            'project': Project.find(
+                id=project_id,
+            ),
+            'ml_subject_assistant_exports': ml_subject_assistant_exports
+        }
+
+        return render(request, 'ml-subject-assistant.html', context)
+
+
+@login_required
+@require_POST
+def ml_subject_assistant_export(request, subject_set_id, project_id):
+    """Export Action: sets up a Subject Set to be exported to a machine learning server."""
+  
+    # Check permissions
+    social = request.user.social_auth.get(provider='zooniverse')
+    with SocialPanoptes(bearer_token=social.access_token) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+    
+    # Create data export
+    export = MLSubjectAssistantExport.objects.create(subject_set_id=subject_set_id)
+    task_result = ml_subject_assistant_export_to_microsoft.delay(
+        export.id,
+        social.access_token,
+    )
+    export.celery_task = task_result.id
+    export.save()
+    return redirect('ml_subject_assistant_list', project_id=project_id)
