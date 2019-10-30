@@ -19,6 +19,11 @@ from celery.exceptions import MaxRetriesExceededError
 from panoptes_client import Panoptes, SubjectSet, Workflow
 from panoptes_client.panoptes import PanoptesAPIException
 
+# WIP
+# --------------------------------
+from azure.storage.blob import BlockBlobService, PublicAccess
+# --------------------------------
+
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hamlet.settings')
 django.setup()
@@ -360,7 +365,42 @@ def ml_subject_assistant_export_to_microsoft(
 
         # SUCCESS
         export.status = MLSubjectAssistantExport.COMPLETE
-        export.save()              
+        export.save()
+
+        # WIP
+        # --------------------------------
+        try:
+            print('START WIP')
+            print('--------------------------------------------------------------------------------')
+
+            azure_account_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
+            azure_account_key = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
+            azure_container_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
+
+            print(azure_account_name, azure_account_key, azure_container_name)
+
+            print('--------------------------------------------------------------------------------')
+
+            print('Connecting to account...')
+            
+            block_blob_service = BlockBlobService(account_name=azure_account_name,account_key=azure_account_key)
+            
+            print('--------------------------------------------------------------------------------')
+            
+            print('Listing all blobs...')
+
+            generator = block_blob_service.list_blobs(azure_container_name)
+            for blob in generator:
+                print("\t Blob name: " + blob.name)
+
+            print('--------------------------------------------------------------------------------')
+            print('END WIP')
+
+
+        except Exception as err:
+            print('[ERROR] ', err)
+
+        # --------------------------------
     
     except Exception as e:
         try:
