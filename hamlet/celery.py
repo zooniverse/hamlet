@@ -358,7 +358,6 @@ def ml_subject_assistant_export_to_microsoft(
             export.subject_set_id,
             export.id,
         )
-        target_filepath = os.path.join('/', target_filename)
 
         # Save the created file to the database
         with open(out_f_name, 'rb') as out_f:
@@ -393,7 +392,6 @@ def ml_subject_assistant_export_to_microsoft(
             
             print('Source filepath: ', source_filepath)
             print('Target filename: ', target_filename)
-            print('Target filepath: ', target_filepath)
             
             created_blob = block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
             
@@ -404,7 +402,14 @@ def ml_subject_assistant_export_to_microsoft(
             permissions = BlobPermissions(read=True)
             generated_sas = block_blob_service.generate_blob_shared_access_signature(azure_container_name, target_filename, permissions)
             
-            print(generated_sas)
+            shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+                azure_account_name,
+                azure_container_name,
+                target_filename,
+                generated_sas
+            )
+            
+            print(shareable_file_url)
             
             print('--------------------------------------------------------------------------------')
             
