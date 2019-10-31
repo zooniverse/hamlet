@@ -352,14 +352,18 @@ def ml_subject_assistant_export_to_microsoft(
             json.dump(data, out_f)
             out_f.flush()
             out_f_name = out_f.name
+        
+        source_filepath = out_f.name
+        target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
+            export.subject_set_id,
+            export.id,
+        )
+        target_filepath = os.path.join('/', target_filename)
 
         # Save the created file to the database
         with open(out_f_name, 'rb') as out_f:
             export.json.save(
-                'ml-subject-assistant-{}-export{}.json'.format(
-                    export.subject_set_id,
-                    export.id,
-                ),
+                target_filename,
                 File(out_f),
             )
 
@@ -384,6 +388,14 @@ def ml_subject_assistant_export_to_microsoft(
             print('Connecting to account...')
             
             block_blob_service = BlockBlobService(account_name=azure_account_name,account_key=azure_account_key)
+            
+            print('--------------------------------------------------------------------------------')
+            
+            print('Source filepath: ', source_filepath)
+            print('Target filename: ', target_filename)
+            print('Target filepath: ', target_filepath)
+            
+            block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
             
             print('--------------------------------------------------------------------------------')
             
