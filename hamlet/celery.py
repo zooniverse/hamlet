@@ -21,7 +21,7 @@ from panoptes_client.panoptes import PanoptesAPIException
 
 # WIP
 # --------------------------------
-from azure.storage.blob import BlockBlobService, PublicAccess
+from azure.storage.blob import BlockBlobService, BlobPermissions
 # --------------------------------
 
 # set the default Django settings module for the 'celery' program.
@@ -385,9 +385,9 @@ def ml_subject_assistant_export_to_microsoft(
 
             print('--------------------------------------------------------------------------------')
 
-            print('Connecting to account...')
+            print('Connecting to Storage...')
             
-            block_blob_service = BlockBlobService(account_name=azure_account_name,account_key=azure_account_key)
+            block_blob_service = BlockBlobService(account_name=azure_account_name, account_key=azure_account_key)
             
             print('--------------------------------------------------------------------------------')
             
@@ -395,7 +395,16 @@ def ml_subject_assistant_export_to_microsoft(
             print('Target filename: ', target_filename)
             print('Target filepath: ', target_filepath)
             
-            block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
+            created_blob = block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
+            
+            print('--------------------------------------------------------------------------------')
+            
+            print('Generate sas: ')
+            
+            permissions = BlobPermissions(read=True)
+            generated_sas = block_blob_service.generate_blob_shared_access_signature(azure_container_name, target_filename, permissions)
+            
+            print(generated_sas)
             
             print('--------------------------------------------------------------------------------')
             
