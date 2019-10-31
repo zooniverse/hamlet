@@ -399,8 +399,15 @@ def ml_subject_assistant_export_to_microsoft(
             
             print('Generate sas: ')
             
-            permissions = BlobPermissions(read=True)
-            generated_sas = block_blob_service.generate_blob_shared_access_signature(azure_container_name, target_filename, permissions)
+            blob_permissions = BlobPermissions(read=True)
+            sas_expiry = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+            
+            generated_sas = block_blob_service.generate_blob_shared_access_signature(
+              container_name=azure_container_name,
+              blob_name=target_filename,
+              permission=blob_permissions,
+              expiry=sas_expiry
+            )
             
             shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
                 azure_account_name,
