@@ -271,13 +271,14 @@ def workflow_export(
 
             export.status = WorkflowExport.COMPLETE
             export.save()
-    except Exception as e:
-        try:
-            self.retry(countdown=60)
-        except MaxRetriesExceededError:
-            export.status = WorkflowExport.FAILED
-            export.save()
-            raise e
+    except Exception as err:
+        # try:
+        #     self.retry(countdown=60)
+        # except MaxRetriesExceededError:
+        #     export.status = WorkflowExport.FAILED
+        #     export.save()
+        #     raise err
+        raise err
     finally:
         os.unlink(out_f_name)
 
@@ -341,13 +342,13 @@ def ml_subject_assistant_export_to_microsoft(
         export.status = MLSubjectAssistantExport.COMPLETE
         export.save()
     
-    except Exception as e:
+    except Exception as err:
         try:
             self.retry(countdown=60)
         except MaxRetriesExceededError:
             export.status = MLSubjectAssistantExport.FAILED
             export.save()
-            raise e
+            raise err
     
     finally:
         # Clean up the temporary file, if it exists.
@@ -464,7 +465,56 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
 
 def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
     ml_task_id = None
-  
-    ml_service_caller = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER')
+    
+    try:
+      
+        ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
+        ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
+        
+        print('POST START')
+        print('--------------------------------------------------------------------------------')
+        
+        req_url = ml_service_url + '/request_detections'
+        req_body = {
+            'images_requested_json_sas': shareable_file_url,
+            'use_url': 'true',
+            'request_name': 'zooniverse-subject-assistant',  # Note: this field may be optional
+            'caller': ml_service_caller_id
+        }
+        
+        print(req_url)
+        print(req_body)
+        
+        print('--------------------------------------------------------------------------------')
+        
+        res = requests.post(
+            req_url,
+            json=req_body,
+            headers={'Content-Type': 'application/json'}
+        )
+        res.raise_for_status()
+
+        print('POST SUCCESS')
+        print('--------------------------------------------------------------------------------')
+        print(res.json())
+        
+        response_json = res.json()
+        ml_task_id = response_json['request_id']
+        
+        print('--------------------------------------------------------------------------------')
+        print('POST DONE')
+
+    except Exception as err:
+        print('ERROR')
+        print('--------------------------------------------------------------------------------')
+        print(err)
+        print('--------------------------------------------------------------------------------')
+      
+        # try:
+        #     self.retry(countdown=60)
+        # except MaxRetriesExceededError:
+        #     raise err
+        
+        raise err
   
     return ml_task_id
