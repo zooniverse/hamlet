@@ -19,10 +19,7 @@ from celery.exceptions import MaxRetriesExceededError
 from panoptes_client import Panoptes, SubjectSet, Workflow
 from panoptes_client.panoptes import PanoptesAPIException
 
-# WIP
-# --------------------------------
 from azure.storage.blob import BlockBlobService, BlobPermissions
-# --------------------------------
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hamlet.settings')
@@ -305,6 +302,59 @@ def ml_subject_assistant_export_to_microsoft(
     service.
     """
     
+    try:
+    
+        export = MLSubjectAssistantExport.objects.get(pk=export_id)
+        target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
+            export.subject_set_id,
+            export.id,
+        )
+        source_filepath = ''
+
+        # Get the Subjects data
+        data = ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(export_id, access_token)
+
+        # Create the file to be exported
+        source_filepath = ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename)
+
+        # Upload the file to Azure, and get a shareable URL to the file
+        shareable_file_url = ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(source_filepath, target_filename)
+        
+        print('--------------------------------------------------------------------------------')
+        print('SHAREABLE URL: ', shareable_file_url)
+        print('--------------------------------------------------------------------------------')
+    
+        # SUCCESS
+        # Save the created file to the database
+        with open(source_filepath, 'rb') as out_f:
+            export.json.save(
+                target_filename,
+                File(out_f),
+            )
+        export.status = MLSubjectAssistantExport.COMPLETE
+        export.save()
+    
+    except Exception as e:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = MLSubjectAssistantExport.FAILED
+            export.save()
+            raise e
+    
+    finally:
+        # Clean up the temporary file, if it exists.
+        try:
+            if len(source_filepath) > 0:
+                os.unlink(source_filepath)
+        except OSError:
+            pass
+
+
+def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
+    export_id,
+    access_token,
+):
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
     data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
     
@@ -335,12 +385,16 @@ def ml_subject_assistant_export_to_microsoft(
                     
                     data.append(item)
                     
-    except:
-        export.status = MLSubjectAssistantExport.FAILED
-        export.save()
-        raise
-    
+        return data
+        
+    except Exception as err:
+        raise err
+
+def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename):
+    export = MLSubjectAssistantExport.objects.get(pk=export_id)
+  
     # Write the data to a file
+    source_filepath = ''
     try:
         # First create a temporary JSON file
         with tempfile.NamedTemporaryFile(
@@ -351,98 +405,54 @@ def ml_subject_assistant_export_to_microsoft(
         ) as out_f:
             json.dump(data, out_f)
             out_f.flush()
-            out_f_name = out_f.name
+            source_filepath = out_f.name
         
-        source_filepath = out_f.name
-        target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
-            export.subject_set_id,
-            export.id,
+        return source_filepath
+    
+    except Exception as err:
+        # Only cleanup the temporary file on error; otherwise it'll be cleaned up in the main function.
+        try:
+            if len(source_filepath) > 0:
+                os.unlink(source_filepath)
+        except OSError:
+            pass
+      
+        raise err
+  
+def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
+    source_filepath,
+    target_filename,
+):
+    shareable_file_url = ''
+  
+    try:
+        azure_account_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
+        azure_account_key = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
+        azure_container_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
+
+        block_blob_service = BlockBlobService(account_name=azure_account_name, account_key=azure_account_key)
+
+        created_blob = block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
+
+        blob_permissions = BlobPermissions(read=True)
+        sas_expiry = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+
+        generated_sas = block_blob_service.generate_blob_shared_access_signature(
+            container_name=azure_container_name,
+            blob_name=target_filename,
+            permission=blob_permissions,
+            expiry=sas_expiry
         )
 
-        # Save the created file to the database
-        with open(out_f_name, 'rb') as out_f:
-            export.json.save(
-                target_filename,
-                File(out_f),
-            )
+        shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+            azure_account_name,
+            azure_container_name,
+            target_filename,
+            generated_sas
+        )
 
-        # SUCCESS
-        export.status = MLSubjectAssistantExport.COMPLETE
-        export.save()
-
-        # WIP
-        # --------------------------------
-        try:
-            print('START WIP')
-            print('--------------------------------------------------------------------------------')
-
-            azure_account_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
-            azure_account_key = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
-            azure_container_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
-
-            print(azure_account_name, azure_account_key, azure_container_name)
-
-            print('--------------------------------------------------------------------------------')
-
-            print('Connecting to Storage...')
-            
-            block_blob_service = BlockBlobService(account_name=azure_account_name, account_key=azure_account_key)
-            
-            print('--------------------------------------------------------------------------------')
-            
-            print('Source filepath: ', source_filepath)
-            print('Target filename: ', target_filename)
-            
-            created_blob = block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
-            
-            print('--------------------------------------------------------------------------------')
-            
-            print('Generate sas: ')
-            
-            blob_permissions = BlobPermissions(read=True)
-            sas_expiry = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
-            
-            generated_sas = block_blob_service.generate_blob_shared_access_signature(
-              container_name=azure_container_name,
-              blob_name=target_filename,
-              permission=blob_permissions,
-              expiry=sas_expiry
-            )
-            
-            shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
-                azure_account_name,
-                azure_container_name,
-                target_filename,
-                generated_sas
-            )
-            
-            print(shareable_file_url)
-            
-            print('--------------------------------------------------------------------------------')
-            
-            print('Listing all blobs...')
-
-            generator = block_blob_service.list_blobs(azure_container_name)
-            for blob in generator:
-                print("\t Blob name: " + blob.name)
-
-            print('--------------------------------------------------------------------------------')
-            print('END WIP')
-
-
-        except Exception as err:
-            print('[ERROR] ', err)
-
-        # --------------------------------
+    except Exception as err:
+        print('[ERROR] ', err)
+        raise err
     
-    except Exception as e:
-        try:
-            self.retry(countdown=60)
-        except MaxRetriesExceededError:
-            export.status = MLSubjectAssistantExport.FAILED
-            export.save()
-            raise e
-    
-    finally:
-        os.unlink(out_f_name)
-
+    return shareable_file_url
