@@ -303,13 +303,15 @@ def ml_subject_assistant_export_to_microsoft(
     """
     
     try:
-    
         export = MLSubjectAssistantExport.objects.get(pk=export_id)
         target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
             export.subject_set_id,
             export.id,
         )
         source_filepath = ''
+        
+        export.status = MLSubjectAssistantExport.RUNNING
+        export.save()
 
         # Get the Subjects data
         data = ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(export_id, access_token)
@@ -320,18 +322,20 @@ def ml_subject_assistant_export_to_microsoft(
         # Upload the file to Azure, and get a shareable URL to the file
         shareable_file_url = ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(source_filepath, target_filename)
         
-        print('--------------------------------------------------------------------------------')
-        print('SHAREABLE URL: ', shareable_file_url)
-        print('--------------------------------------------------------------------------------')
-    
         # SUCCESS
+        export.status = MLSubjectAssistantExport.COMPLETE
+        
         # Save the created file to the database
+        # NOTE: this is technically optional, and only used as a backup
         with open(source_filepath, 'rb') as out_f:
             export.json.save(
                 target_filename,
                 File(out_f),
             )
-        export.status = MLSubjectAssistantExport.COMPLETE
+        
+        # Save a refrence to the shareable URL.
+        # NOTE: these shareable URLs have a shelf life.
+        export.azure_url = shareable_file_url
         export.save()
     
     except Exception as e:
@@ -360,8 +364,6 @@ def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
     
     # Retrieve all Subjects from a Subject Set
     try:
-        export.status = MLSubjectAssistantExport.RUNNING
-        export.save()
         with SocialPanoptes(bearer_token=access_token) as p:
             subject_set = SubjectSet.find(export.subject_set_id)
             
