@@ -322,9 +322,6 @@ def ml_subject_assistant_export_to_microsoft(
         # Upload the file to Azure, and get a shareable URL to the file
         shareable_file_url = ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(source_filepath, target_filename)
         
-        # SUCCESS
-        export.status = MLSubjectAssistantExport.COMPLETE
-        
         # Save the created file to the database
         # NOTE: this is technically optional, and only used as a backup
         with open(source_filepath, 'rb') as out_f:
@@ -336,6 +333,12 @@ def ml_subject_assistant_export_to_microsoft(
         # Save a refrence to the shareable URL.
         # NOTE: these shareable URLs have a shelf life.
         export.azure_url = shareable_file_url
+        
+        # Submit the ML task request to the ML service
+        export.ml_task_id = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
+        
+        # SUCCESS
+        export.status = MLSubjectAssistantExport.COMPLETE
         export.save()
     
     except Exception as e:
@@ -458,3 +461,10 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
         raise err
     
     return shareable_file_url
+
+def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
+    ml_task_id = None
+  
+    ml_service_caller = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER')
+  
+    return ml_task_id
