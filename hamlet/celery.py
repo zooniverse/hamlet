@@ -424,27 +424,23 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
     shareable_file_url = ''
   
     try:
-        azure_account_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
-        azure_account_key = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
-        azure_container_name = os.environ.get('SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
+        block_blob_service = BlockBlobService(account_name=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME, account_key=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY)
 
-        block_blob_service = BlockBlobService(account_name=azure_account_name, account_key=azure_account_key)
-
-        created_blob = block_blob_service.create_blob_from_path(azure_container_name, target_filename, source_filepath)
+        created_blob = block_blob_service.create_blob_from_path(settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME, target_filename, source_filepath)
 
         blob_permissions = BlobPermissions(read=True)
         sas_expiry = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
 
         generated_sas = block_blob_service.generate_blob_shared_access_signature(
-            container_name=azure_container_name,
+            container_name=settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
             blob_name=target_filename,
             permission=blob_permissions,
             expiry=sas_expiry
         )
 
         shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
-            azure_account_name,
-            azure_container_name,
+            settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME,
+            settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
             target_filename,
             generated_sas
         )
