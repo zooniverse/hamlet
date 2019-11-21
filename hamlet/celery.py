@@ -271,7 +271,13 @@ def workflow_export(
 
             export.status = WorkflowExport.COMPLETE
             export.save()
-            
+    except Exception as e:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = WorkflowExport.FAILED
+            export.save()
+            raise e
     finally:
         os.unlink(out_f_name)
 
