@@ -363,34 +363,30 @@ def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
     data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
     
     # Retrieve all Subjects from a Subject Set
-    try:
-        with SocialPanoptes(bearer_token=access_token) as p:
-            subject_set = SubjectSet.find(export.subject_set_id)
-            
-            # Process each Subject
-            for subject in subject_set.subjects:
-                
-                # Create a data item for each image URL in the Subject
-                for frame_id, location in enumerate(subject.locations):
-                    image_url = list(location.values())[0]
-                    
-                    subject_information = {
-                        'project_id': str(subject_set.links.project.id),
-                        'subject_set_id': str(export.subject_set_id),
-                        'subject_id': str(subject.id),
-                        'frame_id': str(frame_id)
-                    }
-                    
-                    item = []
-                    item.append(image_url)
-                    item.append(json.dumps(subject_information))  # The subject's JSON information is stored as a string. Yes, really.
-                    
-                    data.append(item)
-                    
-        return data
-        
-    except Exception as err:
-        raise err
+    with SocialPanoptes(bearer_token=access_token) as p:
+        subject_set = SubjectSet.find(export.subject_set_id)
+
+        # Process each Subject
+        for subject in subject_set.subjects:
+
+            # Create a data item for each image URL in the Subject
+            for frame_id, location in enumerate(subject.locations):
+                image_url = list(location.values())[0]
+
+                subject_information = {
+                    'project_id': str(subject_set.links.project.id),
+                    'subject_set_id': str(export.subject_set_id),
+                    'subject_id': str(subject.id),
+                    'frame_id': str(frame_id)
+                }
+
+                item = []
+                item.append(image_url)
+                item.append(json.dumps(subject_information))  # The subject's JSON information is stored as a string. Yes, really.
+
+                data.append(item)
+
+    return data
 
 def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename):
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
