@@ -60,3 +60,5 @@ class WorkflowExport(StatusModel):
 class MLSubjectAssistantExport(StatusModel):
     subject_set_id = models.IntegerField()
     json = models.FileField(upload_to='ml_subject_assistant/', null=True)
+    azure_url = models.CharField(max_length=512, null=True)
+    ml_task_id = models.IntegerField(null=True)

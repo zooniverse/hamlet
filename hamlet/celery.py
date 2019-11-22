@@ -19,6 +19,8 @@ from celery.exceptions import MaxRetriesExceededError
 from panoptes_client import Panoptes, SubjectSet, Workflow
 from panoptes_client.panoptes import PanoptesAPIException
 
+from azure.storage.blob import BlockBlobService, BlobPermissions
+
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hamlet.settings')
 django.setup()
@@ -300,42 +302,100 @@ def ml_subject_assistant_export_to_microsoft(
     service.
     """
     
+    try:
+        export = MLSubjectAssistantExport.objects.get(pk=export_id)
+        target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
+            export.subject_set_id,
+            export.id,
+        )
+        source_filepath = ''
+        
+        export.status = MLSubjectAssistantExport.RUNNING
+        export.save()
+
+        # Get the Subjects data
+        data = ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(export_id, access_token)
+
+        # Create the file to be exported
+        source_filepath = ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename)
+
+        # Upload the file to Azure, and get a shareable URL to the file
+        shareable_file_url = ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(source_filepath, target_filename)
+        
+        # Save the created file to the database
+        # NOTE: this is technically optional, and only used as a backup
+        with open(source_filepath, 'rb') as out_f:
+            export.json.save(
+                target_filename,
+                File(out_f),
+            )
+        
+        # Save a refrence to the shareable URL.
+        # NOTE: these shareable URLs have a shelf life.
+        export.azure_url = shareable_file_url
+        
+        # Submit the ML task request to the ML service
+        export.ml_task_id = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
+        
+        # SUCCESS
+        export.status = MLSubjectAssistantExport.COMPLETE
+        export.save()
+    
+    except Exception as err:
+        try:
+            self.retry(countdown=60)
+        except MaxRetriesExceededError:
+            export.status = MLSubjectAssistantExport.FAILED
+            export.save()
+            raise err
+    
+    finally:
+        # Clean up the temporary file, if it exists.
+        try:
+            if len(source_filepath) > 0:
+                os.unlink(source_filepath)
+        except OSError:
+            pass
+
+
+def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
+    export_id,
+    access_token,
+):
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
     data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
     
     # Retrieve all Subjects from a Subject Set
-    try:
-        export.status = MLSubjectAssistantExport.RUNNING
-        export.save()
-        with SocialPanoptes(bearer_token=access_token) as p:
-            subject_set = SubjectSet.find(export.subject_set_id)
-            
-            # Process each Subject
-            for subject in subject_set.subjects:
-                
-                # Create a data item for each image URL in the Subject
-                for frame_id, location in enumerate(subject.locations):
-                    image_url = list(location.values())[0]
-                    
-                    subject_information = {
-                        'project_id': str(subject_set.links.project.id),
-                        'subject_set_id': str(export.subject_set_id),
-                        'subject_id': str(subject.id),
-                        'frame_id': str(frame_id)
-                    }
-                    
-                    item = []
-                    item.append(image_url)
-                    item.append(json.dumps(subject_information))  # The subject's JSON information is stored as a string. Yes, really.
-                    
-                    data.append(item)
-                    
-    except:
-        export.status = MLSubjectAssistantExport.FAILED
-        export.save()
-        raise
-    
+    with SocialPanoptes(bearer_token=access_token) as p:
+        subject_set = SubjectSet.find(export.subject_set_id)
+
+        # Process each Subject
+        for subject in subject_set.subjects:
+
+            # Create a data item for each image URL in the Subject
+            for frame_id, location in enumerate(subject.locations):
+                image_url = list(location.values())[0]
+
+                subject_information = {
+                    'project_id': str(subject_set.links.project.id),
+                    'subject_set_id': str(export.subject_set_id),
+                    'subject_id': str(subject.id),
+                    'frame_id': str(frame_id)
+                }
+
+                item = []
+                item.append(image_url)
+                item.append(json.dumps(subject_information))  # The subject's JSON information is stored as a string. Yes, really.
+
+                data.append(item)
+
+    return data
+
+def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename):
+    export = MLSubjectAssistantExport.objects.get(pk=export_id)
+  
     # Write the data to a file
+    source_filepath = ''
     try:
         # First create a temporary JSON file
         with tempfile.NamedTemporaryFile(
@@ -346,30 +406,76 @@ def ml_subject_assistant_export_to_microsoft(
         ) as out_f:
             json.dump(data, out_f)
             out_f.flush()
-            out_f_name = out_f.name
-
-        # Save the created file to the database
-        with open(out_f_name, 'rb') as out_f:
-            export.json.save(
-                'ml-subject-assistant-{}-export{}.json'.format(
-                    export.subject_set_id,
-                    export.id,
-                ),
-                File(out_f),
-            )
-
-        # SUCCESS
-        export.status = MLSubjectAssistantExport.COMPLETE
-        export.save()              
+            source_filepath = out_f.name
+        
+        return source_filepath
     
-    except Exception as e:
+    except Exception as err:
+        # Only cleanup the temporary file on error; otherwise it'll be cleaned up in the main function.
         try:
-            self.retry(countdown=60)
-        except MaxRetriesExceededError:
-            export.status = MLSubjectAssistantExport.FAILED
-            export.save()
-            raise e
-    
-    finally:
-        os.unlink(out_f_name)
+            if len(source_filepath) > 0:
+                os.unlink(source_filepath)
+        except OSError:
+            pass
+      
+        raise err
+  
+def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
+    source_filepath,
+    target_filename,
+):
+    shareable_file_url = ''
+  
+    try:
+        block_blob_service = BlockBlobService(account_name=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME, account_key=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY)
 
+        created_blob = block_blob_service.create_blob_from_path(settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME, target_filename, source_filepath)
+
+        blob_permissions = BlobPermissions(read=True)
+        sas_expiry = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+
+        generated_sas = block_blob_service.generate_blob_shared_access_signature(
+            container_name=settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
+            blob_name=target_filename,
+            permission=blob_permissions,
+            expiry=sas_expiry
+        )
+
+        shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+            settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME,
+            settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
+            target_filename,
+            generated_sas
+        )
+
+    except Exception as err:
+        print('[ERROR] ', err)
+        raise err
+    
+    return shareable_file_url
+
+def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
+    ml_task_id = None
+    
+    ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
+    ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
+
+    req_url = ml_service_url + '/request_detections'
+    req_body = {
+        'images_requested_json_sas': shareable_file_url,
+        'use_url': 'true',
+        'request_name': 'zooniverse-subject-assistant',  # Note: this field may be optional
+        'caller': ml_service_caller_id
+    }
+
+    res = requests.post(
+        req_url,
+        json=req_body,
+        headers={'Content-Type': 'application/json'}
+    )
+    res.raise_for_status()
+
+    response_json = res.json()
+    ml_task_id = response_json['request_id']
+        
+    return ml_task_id
