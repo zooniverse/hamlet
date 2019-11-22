@@ -322,9 +322,6 @@ def ml_subject_assistant_export_to_microsoft(
         # Upload the file to Azure, and get a shareable URL to the file
         shareable_file_url = ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(source_filepath, target_filename)
         
-        # SUCCESS
-        export.status = MLSubjectAssistantExport.COMPLETE
-        
         # Save the created file to the database
         # NOTE: this is technically optional, and only used as a backup
         with open(source_filepath, 'rb') as out_f:
@@ -336,15 +333,21 @@ def ml_subject_assistant_export_to_microsoft(
         # Save a refrence to the shareable URL.
         # NOTE: these shareable URLs have a shelf life.
         export.azure_url = shareable_file_url
+        
+        # Submit the ML task request to the ML service
+        export.ml_task_id = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
+        
+        # SUCCESS
+        export.status = MLSubjectAssistantExport.COMPLETE
         export.save()
     
-    except Exception as e:
+    except Exception as err:
         try:
             self.retry(countdown=60)
         except MaxRetriesExceededError:
             export.status = MLSubjectAssistantExport.FAILED
             export.save()
-            raise e
+            raise err
     
     finally:
         # Clean up the temporary file, if it exists.
@@ -450,3 +453,29 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
         raise err
     
     return shareable_file_url
+
+def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
+    ml_task_id = None
+    
+    ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
+    ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
+
+    req_url = ml_service_url + '/request_detections'
+    req_body = {
+        'images_requested_json_sas': shareable_file_url,
+        'use_url': 'true',
+        'request_name': 'zooniverse-subject-assistant',  # Note: this field may be optional
+        'caller': ml_service_caller_id
+    }
+
+    res = requests.post(
+        req_url,
+        json=req_body,
+        headers={'Content-Type': 'application/json'}
+    )
+    res.raise_for_status()
+
+    response_json = res.json()
+    ml_task_id = response_json['request_id']
+        
+    return ml_task_id
