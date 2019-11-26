@@ -120,7 +120,7 @@ def ml_subject_assistant_list(request, project_id):
                 subject_set_id=subject_set.id
             ).order_by('-created')
             
-            external_web_app_url = 'https://subject-assistant.zooniverse.org/#/tasks/'
+            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_URL 
             if list(data_export)[0].ml_task_id:
                 external_web_app_url = external_web_app_url + str(list(data_export)[0].ml_task_id)
           
