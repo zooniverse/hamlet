@@ -7,36 +7,29 @@
 
   <h3>Subject set export</h3>
   <ul>
-    {% for subject_set, data_export in ml_subject_assistant_exports %}
-      <li>
-        <form action="{% url 'ml_subject_assistant_export' project.id subject_set.id %}" method="post">
-          {% csrf_token %}
-          {{ subject_set.id }} - {{ subject_set.display_name }}: <input type="submit" value="Generate">
-          {% if data_export.0 %}
-            &nbsp;&middot;&nbsp;
-            {{ data_export.0.get_status_display }}
-          {% endif %}
-          {% if data_export.0.json %}
-            &nbsp;&middot;&nbsp;
-            <label>
-              JSON (AWS):
-              <input type="text" name="json-url" value="{{ data_export.0.json.url }}" readonly>
-            </label>
-          {% endif %}
-          {% if data_export.0.azure_url %}
-            &nbsp;&middot;&nbsp;
-            <label>
-              Azure URL:
-              <input type="text" name="azure-url" value="{{ data_export.0.azure_url }}" readonly>
-            </label>
-          {% endif %}
+    {% for subject_set, data_export, external_web_app_url in ml_subject_assistant_exports %}
+      <li style="margin: 1em auto">
+        <form
+          action="{% url 'ml_subject_assistant_export' project.id subject_set.id %}"
+          method="post"
+        >
+          <div>
+            {% csrf_token %}
+            <b>{{ subject_set.id }} - {{ subject_set.display_name }}:</b> <input type="submit" value="Generate">
+            {% if data_export.0 %}
+              &nbsp;&middot;&nbsp;
+              {{ data_export.0.get_status_display }}
+            {% endif %}
+          </div>
           
           {% if data_export.0.ml_task_id %}
-            &nbsp;&middot;&nbsp;
-            <label>
-              ML Task ID:
-              <input type="text" name="ml-task-id" value="{{ data_export.0.ml_task_id }}" readonly>
+          <div>
+            <label style="display: block">
+              ML Task ID: {{ data_export.0.ml_task_id }}
             </label>
+            
+            <a style="display: block" target="_blank" href="{{external_web_app_url}}">View the results on the Subject Assistant &raquo; </a>
+          </div>
           {% endif %}
         </form>
       </li>

@@ -8,7 +8,11 @@
     <h2>Projects</h2>
     <ul>
       {% for project in projects %}
-      <li><a href="{% url 'project' project.id %}">{{ project.display_name }}</a></li>
+      <li>
+        <b>{{ project.display_name }}</b>
+        <a href="{% url 'project' project.id %}">Export</a>
+        <a href="{% url 'ml_subject_assistant_list' project.id %}">Subject Assistant</a>
+      </li>
       {% endfor %}
     </ul>
 {% endblock %}
