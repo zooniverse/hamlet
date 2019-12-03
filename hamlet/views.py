@@ -116,11 +116,18 @@ def ml_subject_assistant_list(request, project_id):
         ml_subject_assistant_exports = []
 
         for subject_set in SubjectSet.where(project_id=project_id):
+            data_export = MLSubjectAssistantExport.objects.filter(
+                subject_set_id=subject_set.id
+            ).order_by('-created')
+            
+            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_URL 
+            if list(data_export)[0].ml_task_id:
+                external_web_app_url = external_web_app_url + str(list(data_export)[0].ml_task_id)
+          
             ml_subject_assistant_exports.append((
                 subject_set,
-                MLSubjectAssistantExport.objects.filter(
-                    subject_set_id=subject_set.id
-                ).order_by('-created'),
+                data_export,
+                external_web_app_url
             ))
 
         context = {
