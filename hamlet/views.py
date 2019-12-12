@@ -121,8 +121,8 @@ def ml_subject_assistant_list(request, project_id):
             ).order_by('-created')
             
             external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_URL 
-            if data_export and list(data_export)[0].ml_task_id:
-                external_web_app_url = external_web_app_url + str(list(data_export)[0].ml_task_id)
+            if data_export.first() and data_export.first().ml_task_id:
+                external_web_app_url = external_web_app_url + str(data_export.first().ml_task_id)
           
             ml_subject_assistant_exports.append((
                 subject_set,
