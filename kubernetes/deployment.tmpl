@@ -69,6 +69,31 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: PANOPTES_SECRET
+            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
+            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
+            - name: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
+            - name: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
+            - name: SUBJECT_ASSISTANT_ML_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_ML_SERVICE_URL
             - name: DJANGO_ENV
               value: staging
             - name: REDIS_URI
@@ -132,6 +157,31 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: PANOPTES_SECRET
+            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
+            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
+            - name: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
+            - name: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
+            - name: SUBJECT_ASSISTANT_ML_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: SUBJECT_ASSISTANT_ML_SERVICE_URL
             - name: DJANGO_ENV
               value: staging
             - name: REDIS_URI
