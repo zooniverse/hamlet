@@ -186,6 +186,7 @@ AWS_LOCATION = '{}/'.format(os.environ.get('DJANGO_ENV', 'development'))
 AWS_S3_OBJECT_PARAMETERS = {
     'ContentDisposition': 'attachment',
 }
+AWS_S3_SIGNATURE_VERSION = 's3v4'
 
 TMP_STORAGE_PATH = os.environ.get(
     'TMP_STORAGE_PATH',
