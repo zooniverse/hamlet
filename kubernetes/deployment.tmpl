@@ -3,14 +3,13 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: hamlet-staging-export-tmp
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "aws-efs"
 spec:
   accessModes:
     - ReadWriteMany
+  storageClassName: azurefile
   resources:
     requests:
-      storage: 1Mi
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -27,8 +26,6 @@ spec:
     metadata:
       labels:
         app: hamlet-staging-app
-      annotations:
-        iam.amazonaws.com/role: hamlet
     spec:
       containers:
         - name: hamlet-staging-app
@@ -94,6 +91,16 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: SUBJECT_ASSISTANT_ML_SERVICE_URL
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: AWS_SECRET_ACCESS_KEY
             - name: DJANGO_ENV
               value: staging
             - name: REDIS_URI
@@ -114,8 +121,6 @@ spec:
     metadata:
       labels:
         app: hamlet-staging-celery
-      annotations:
-        iam.amazonaws.com/role: hamlet
     spec:
       containers:
         - name: hamlet-staging-celery
@@ -182,6 +187,16 @@ spec:
                 secretKeyRef:
                   name: hamlet-staging-conf
                   key: SUBJECT_ASSISTANT_ML_SERVICE_URL
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamlet-staging-conf
+                  key: AWS_SECRET_ACCESS_KEY
             - name: DJANGO_ENV
               value: staging
             - name: REDIS_URI
@@ -213,14 +228,13 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: hamlet-staging-redis
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "aws-efs"
 spec:
   accessModes:
     - ReadWriteMany
+  storageClassName: azurefile
   resources:
     requests:
-      storage: 1Mi
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
