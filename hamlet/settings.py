@@ -31,6 +31,7 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = [
     'hamlet-staging.zooniverse.org',
     'hamlet.zooniverse.org',
+    'hamlet-staging.azure.zooniverse.org',
 ]
 
 if DEBUG:
