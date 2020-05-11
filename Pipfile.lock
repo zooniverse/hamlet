@@ -582,10 +582,10 @@
         },
         "azure-servicemanagement-legacy": {
             "hashes": [
-                "sha256:282d48aae6aa002c59db6f651b68777a8f93692bb8e9b443113e6a8d5ce5e875",
-                "sha256:c883ff8fa3d4f4cb7b9344e8cb7d92a9feca2aa5efd596237aeea89e5c10981d"
+                "sha256:5d388b9fda83161aca617f224c9e895ce51fe6a84b7524bc000c557c025f91cd",
+                "sha256:c9f80060d2ad019635035562545b9174904282017182c791a21e8017c0647bcc"
             ],
-            "version": "==0.20.6"
+            "version": "==0.20.7"
         },
         "azure-storage-blob": {
             "hashes": [
@@ -624,18 +624,18 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:6374e39ea66433250ac6e4726623fe59ec32bfd52e5c871140c883ab72b0375c",
-                "sha256:7a2474db6576d7d3f5c3336ec54450e34211d44e2342e501a67e2fae35916e63"
+                "sha256:05f75d30aa10094eb96bba22b25b6005126de748188f196a5fffab8a76d821ac",
+                "sha256:f1ac7eb23ff8b1d7e314123668ff1e93b874dd396ac5424adc443d68bd8a6fbf"
             ],
             "index": "pypi",
-            "version": "==1.13.1"
+            "version": "==1.13.6"
         },
         "botocore": {
             "hashes": [
-                "sha256:879cedb22baf9446323240f1cf57d4e0e7ba262ba6fde6d3540cf7fdd7ddad34",
-                "sha256:c6d3dd976c1462a4e0f2dabde09c38de2a641e6b6bb0af505ac8465735796367"
+                "sha256:1f5e57f41f9f9400feffc62f17b517a601643ffec69f7ee927555604112cc012",
+                "sha256:b9c8e0aa07770b7b371d586db41eef46e70bfc4ab47f7a1ee1acd4e9c811c6c9"
             ],
-            "version": "==1.16.1"
+            "version": "==1.16.6"
         },
         "celery": {
             "hashes": [
@@ -943,10 +943,10 @@
         },
         "python-magic": {
             "hashes": [
-                "sha256:f2674dcfad52ae6c49d4803fa027809540b130db1dec928cfbb9240316831375",
-                "sha256:f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5"
+                "sha256:356efa93c8899047d1eb7d3eb91e871ba2f5b1376edbaf4cc305e3c872207355",
+                "sha256:b757db2a5289ea3f1ced9e60f072965243ea43a2221430048fd8cacab17be0ce"
             ],
-            "version": "==0.4.15"
+            "version": "==0.4.18"
         },
         "python3-openid": {
             "hashes": [
