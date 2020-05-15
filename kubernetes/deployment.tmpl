@@ -30,6 +30,13 @@ spec:
       containers:
         - name: hamlet-staging-app
           image: zooniverse/hamlet:__IMAGE_TAG__
+          resources:
+             requests:
+               memory: "100Mi"
+               cpu: "10m"
+             limits:
+               memory: "100Mi"
+               cpu: "500m"
           env:
             - name: DB_HOST
               valueFrom:
@@ -125,6 +132,13 @@ spec:
       containers:
         - name: hamlet-staging-celery
           image: zooniverse/hamlet:__IMAGE_TAG__
+          resources:
+             requests:
+               memory: "150Mi"
+               cpu: "10m"
+             limits:
+               memory: "150Mi"
+               cpu: "500m"
           args: ["bash", "/usr/src/app/start_worker.sh"]
           env:
             - name: DB_HOST
@@ -257,6 +271,13 @@ spec:
       containers:
         - name: hamlet-staging-redis
           image: redis
+          resources:
+             requests:
+               memory: "20Mi"
+               cpu: "10m"
+             limits:
+               memory: "20Mi"
+               cpu: "500m"
           volumeMounts:
           - name: hamlet-staging-redis-data
             mountPath: "/data"
