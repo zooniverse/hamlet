@@ -9,17 +9,27 @@
         <link href="{% static "main.css" %}" rel="stylesheet">
     </head>
     <body>
-        <h1>Hamlet</h1>
+        <header>
+            <img class="zooniverse-logo" src="{% static "zooniverse-logo-white.png" %}">
+            <h1>Hamlet</h1>
+        </header>
+        
+        <nav>
+            {% block nav %}
+                <p>
+                    {% block projnav %}<a href="{% url 'index' %}">Projects list</a>&nbsp;&middot;&nbsp;{% endblock %}
+                    <a href="{% url 'logout' %}">Logout {{ user.username }}</a>
+                </p>
+            {% endblock %}
+        </nav>
+        
+      
+        <main>
 
-        {% block nav %}
-            <p>
-                {% block projnav %}<a href="{% url 'index' %}">Projects list</a>&nbsp;&middot;&nbsp;{% endblock %}
-                <a href="{% url 'logout' %}">Logout {{ user.username }}</a>
-            </p>
-        {% endblock %}
+            {% block content %}
+            {% endblock %}
 
-        {% block content %}
-        {% endblock %}
+        </main>
 
     </body>
 </html>
