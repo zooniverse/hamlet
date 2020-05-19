@@ -23,6 +23,7 @@ header {
   display: flex;
   flex-direction: row;
   align-items: center;
+  padding: 0.5rem 1rem;
   color: #fff;  /* White */
   background: #00979d;  /* Zooniverse Dark Teal */
 }
@@ -30,7 +31,7 @@ header {
 header .zooniverse-logo {
   flex: 0 0 auto;
   width: 2em;
-  margin: 0 1em;
+  margin-right: 1em;
 }
   
 header h1 {
@@ -38,11 +39,23 @@ header h1 {
 }
 
 nav {
-  padding: 0 1em;
+  padding: 0 1rem;
 }
 
 main {
-  padding: 1em;
+  padding: 1rem;
+}
+/*
+--------------------------------------------------------------------------------
+ */
+
+
+/*
+Functional Sections
+--------------------------------------------------------------------------------
+ */
+section.info {
+  max-width: 50rem;
 }
 /*
 --------------------------------------------------------------------------------
