@@ -1,0 +1,62 @@
+/*
+Standard Styles
+--------------------------------------------------------------------------------
+ */
+:root {
+  background: #fff;  /* White */
+  color: #5c5c5c;  /* Dark Grey */
+  font-family: 'Karla', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #00979d;  /* Zooniverse Teal */
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  color: #fff;  /* White */
+  background: #00979d;  /* Zooniverse Dark Teal */
+}
+
+header .zooniverse-logo {
+  flex: 0 0 auto;
+  width: 2em;
+  margin-right: 1em;
+}
+  
+header h1 {
+  flex: 1 1 auto;
+}
+
+nav {
+  padding: 0 1rem;
+}
+
+main {
+  padding: 1rem;
+}
+/*
+--------------------------------------------------------------------------------
+ */
+
+
+/*
+Functional Sections
+--------------------------------------------------------------------------------
+ */
+section.info {
+  max-width: 50rem;
+}
+/*
+--------------------------------------------------------------------------------
+ */

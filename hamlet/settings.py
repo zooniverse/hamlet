@@ -140,6 +140,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
 if not DEBUG:
     SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
 

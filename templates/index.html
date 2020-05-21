@@ -5,7 +5,21 @@
 {% block projnav %}{% endblock %}
 
 {% block content %}
+
+    <section class="info">
+      <p>
+        Welcome to the Hamlet service. This service allows <a href="https://www.zooniverse.org/" target="_blank">Zooniverse</a> Project Owners to export their Project data to various external services.
+      </p>
+
+      <ul>
+        <li>First, choose your project from the list below. Then, either:</li>
+        <li>(A) click <b>AutoML Export</b> if you want to export your data to Google Cloud Storage and train your AutoML model. OR,</li>
+        <li>(B) click <b>Subject Assistant</b> if you were directed to this service from the <a href="https://subject-assistant.zooniverse.org/" target="_blank">Subject Assistant web app</a> and want to identify animal/wildlife in your camera trap photos.</li>
+      </ul>
+    </section>
+
     <h2>Projects</h2>
+
     <ul>
       {% for project in projects %}
       <li style="margin: 1em auto">
