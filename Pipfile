@@ -12,7 +12,7 @@ pytest-mock = "*"
 pytest-pythonpath = "*"
 
 [packages]
-django = "<3.0"
+django = "<4.0"
 celery = "*"
 oauthlib = "*"
 panoptes-client = ">=1.1.1"
