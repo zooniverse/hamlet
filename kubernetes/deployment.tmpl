@@ -143,9 +143,11 @@ spec:
               value: staging
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
+            - name: STATIC_ROOT
+              value: "/static-assets"
           volumeMounts:
             - name: static-assets
-              mountPath: "/static"
+              mountPath: "/static-assets"
         - name: hamlet-staging-nginx
           image: zooniverse/apps-nginx:xenial
           resources:
