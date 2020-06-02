@@ -1,3 +1,36 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: hamlet-nginx-conf-staging
+data:
+  nginx.conf: |+
+    upstream docker-hamlet {
+      server localhost:81;
+    }
+
+    server {
+      server_name hamlet-staging.zooniverse.org
+      include /etc/nginx/ssl.default.conf;
+      gzip_types *;
+
+      location ~ ^/static/ {
+        root /static-assets/;
+        gzip_static on; # to serve pre-gzipped version
+        expires max;
+        add_header Cache-Control public;
+      }
+
+      location / {
+        proxy_pass http://docker-hamlet;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_buffer_size   128k;
+        proxy_buffers   4 256k;
+        proxy_busy_buffers_size   256k;
+      }
+    }
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -112,56 +145,36 @@ spec:
               value: staging
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
-          volumeMounts:  # ??? Is this necessary?
-            - name: static-assets
-              mountPath: "/static"
-
-        - name: hamlet-staging-nginx
-          image: zooniverse/apps-nginx:xenial
-          ports:
-            - containerPort: 80  # ??? could this conflict with the Django app?
           volumeMounts:
             - name: static-assets
               mountPath: "/static"
+        - name: hamlet-staging-nginx
+          image: zooniverse/apps-nginx:xenial
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "10m"
+            limits:
+              memory: "100Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: static-assets
+              mountPath: "/static-assets"
+            - name: hamlet-nginx-conf
+              mountPath: "/etc/nginx-sites"
       volumes:
         - name: static-assets
-          configMap:  # ??? use EmptyDir: {} instead of the ConfigMap?
+          emptyDir: {}
+        - name: hamlet-nginx-conf
+          configMap:
             name: hamlet-nginx-conf-staging
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  name: hamlet-nginx-conf-staging
-data:
-  nginx.conf: |+
-    upstream docker-hamlet {
-      server localhost:81;
-    }
-
-    server {
-      server_name hamlet-staging.zooniverse.org
-      include /etc/nginx/ssl.default.conf;
-      gzip_types *;
-
-      location ~ ^/static/ {
-        root /hamlet/static/;
-        gzip_static on; # to serve pre-gzipped version
-        expires max;
-        add_header Cache-Control public;
-      }
-
-      location / {
-        proxy_pass http://docker-hamlet;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_buffer_size   128k;
-        proxy_buffers   4 256k;
-        proxy_busy_buffers_size   256k;
-      }
-    }
 ---
 apiVersion: apps/v1
 kind: Deployment
