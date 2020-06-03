@@ -71,6 +71,9 @@ spec:
             httpGet:
               path: /
               port: 8080
+              httpHeaders:
+                 - name: Host
+                   value: "hamlet-staging.zooniverse.org"
             initialDelaySeconds: 10
           env:
             - name: DB_HOST
@@ -165,6 +168,9 @@ spec:
             httpGet:
               path: /
               port: 80
+              httpHeaders:
+                 - name: Host
+                   value: "hamlet-staging.zooniverse.org"
             initialDelaySeconds: 10
           ports:
             - containerPort: 80
