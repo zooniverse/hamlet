@@ -13,6 +13,10 @@ data:
       include /etc/nginx/ssl.default.conf;
       gzip_types *;
 
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
       location ~ ^/static/ {
         root /static-assets/;
         gzip_static on; # to serve pre-gzipped version
@@ -67,6 +71,9 @@ spec:
             httpGet:
               path: /
               port: 8080
+              httpHeaders:
+                 - name: Host
+                   value: "hamlet-staging.zooniverse.org"
             initialDelaySeconds: 10
           env:
             - name: DB_HOST
@@ -144,7 +151,7 @@ spec:
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
             - name: STATIC_ROOT
-              value: "/static-assets"
+              value: "/static-assets/static/"
           volumeMounts:
             - name: static-assets
               mountPath: "/static-assets"
@@ -161,6 +168,9 @@ spec:
             httpGet:
               path: /
               port: 80
+              httpHeaders:
+                 - name: Host
+                   value: "hamlet-staging.zooniverse.org"
             initialDelaySeconds: 10
           ports:
             - containerPort: 80
