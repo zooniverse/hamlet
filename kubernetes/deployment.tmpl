@@ -13,6 +13,10 @@ data:
       include /etc/nginx/ssl.default.conf;
       gzip_types *;
 
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
       location ~ ^/static/ {
         root /static-assets/;
         gzip_static on; # to serve pre-gzipped version
