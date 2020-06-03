@@ -1,3 +1,29 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: hamlet-nginx-conf-staging
+data:
+  nginx.conf: |+
+    upstream docker-hamlet {
+      server localhost:8080;
+    }
+
+    server {
+      server_name hamlet-staging.zooniverse.org
+      include /etc/nginx/ssl.default.conf;
+      gzip_types *;
+
+      location ~ ^/static/ {
+        root /static-assets/;
+        gzip_static on; # to serve pre-gzipped version
+        expires max;
+        add_header Cache-Control public;
+      }
+
+      location / {
+        proxy_pass http://docker-hamlet;
+      }
+    }
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -37,6 +63,11 @@ spec:
              limits:
                memory: "100Mi"
                cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
           env:
             - name: DB_HOST
               valueFrom:
@@ -112,6 +143,38 @@ spec:
               value: staging
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
+            - name: STATIC_ROOT
+              value: "/static-assets"
+          volumeMounts:
+            - name: static-assets
+              mountPath: "/static-assets"
+        - name: hamlet-staging-nginx
+          image: zooniverse/apps-nginx:xenial
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "10m"
+            limits:
+              memory: "100Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: static-assets
+              mountPath: "/static-assets"
+            - name: hamlet-nginx-conf
+              mountPath: "/etc/nginx-sites"
+      volumes:
+        - name: static-assets
+          emptyDir: {}
+        - name: hamlet-nginx-conf
+          configMap:
+            name: hamlet-nginx-conf-staging
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -235,7 +298,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080
+      targetPort: 80
   type: NodePort
 ---
 kind: PersistentVolumeClaim
