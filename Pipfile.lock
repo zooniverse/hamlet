@@ -632,10 +632,10 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:17bc71415186efb86a25dd674f78064cdd85139485967d5a0741c7b83d62cf5b",
-                "sha256:e44b11b1c47c06b0f6524b0ff1fa1cae5ddea4eb06f359e4a9730e8e881b397a"
+                "sha256:66a92cc8cb070483d1c013748a96b9bf76cfb8dbcba9ffd942dae749e432afe1",
+                "sha256:b55b3acab42b58c24481a9fbb33d53fb7d8d03dfc0338af0132f6c5010006d0d"
             ],
-            "version": "==1.16.24"
+            "version": "==1.16.25"
         },
         "celery": {
             "hashes": [
@@ -1197,11 +1197,11 @@
         },
         "pytest-pspec": {
             "hashes": [
-                "sha256:14274721d4b1ac500a7d133c7a84af26b921dbe942dbf175512ae16225647968",
-                "sha256:6302a692fe3ebd5ee6aea6e458f2455ba8768b57d4571118a28d8d5bbdbb57d0"
+                "sha256:5c0b0c9e964d5066cc5f2a2e1b296ad1313abbf58c4fd75014553fdf65bfe67a",
+                "sha256:f80cc46f8896524bfe68750f3a5324bad8d4cb5112e90004bfdaafb7248e5cfd"
             ],
             "index": "pypi",
-            "version": "==0.0.3"
+            "version": "==0.0.4"
         },
         "pytest-pythonpath": {
             "hashes": [
