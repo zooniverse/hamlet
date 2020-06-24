@@ -207,10 +207,10 @@ spec:
           image: zooniverse/hamlet:__IMAGE_TAG__
           resources:
              requests:
-               memory: "150Mi"
+               memory: "500Mi"
                cpu: "10m"
              limits:
-               memory: "150Mi"
+               memory: "500Mi"
                cpu: "500m"
           args: ["bash", "/usr/src/app/start_worker.sh"]
           env:
