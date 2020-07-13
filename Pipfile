@@ -25,7 +25,7 @@ requests = "*"
 django-storages = "*"
 boto3 = "*"
 flower = "*"
-azure-mgmt-storage = "*"
+azure = "<5"
 
 [requires]
 python_version = "3.7"
