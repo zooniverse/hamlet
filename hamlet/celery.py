@@ -335,7 +335,7 @@ def ml_subject_assistant_export_to_microsoft(
         export.azure_url = shareable_file_url
         
         # Submit the ML task request to the ML service
-        export.ml_task_id = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
+        export.ml_task_uuid = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
         
         # SUCCESS
         export.status = MLSubjectAssistantExport.COMPLETE
@@ -455,7 +455,7 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
     return shareable_file_url
 
 def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
-    ml_task_id = None
+    ml_task_uuid = None
     
     ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
     ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
@@ -476,6 +476,6 @@ def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_
     res.raise_for_status()
 
     response_json = res.json()
-    ml_task_id = response_json['request_id']
+    ml_task_uuid = response_json['request_id']
         
-    return ml_task_id
+    return ml_task_uuid
