@@ -496,7 +496,7 @@ def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_
         response_json = res.json()
         ml_task_uuid = response_json['request_id']
     
-    expect Exception as err:
+    except Exception as err:
         print('[ERROR] ', err)
         raise err
         
