@@ -45,10 +45,10 @@
             {% endif %}
           </div>
           
-          {% if data_export.0.ml_task_id %}
+          {% if data_export.0.ml_task_uuid %}
           <div>
             <label style="display: block">
-              ML Task ID: {{ data_export.0.ml_task_id }}
+              ML Task ID: {{ data_export.0.ml_task_uuid }}
             </label>
             
             <a style="display: block" target="_blank" href="{{external_web_app_url}}">View the results on the Subject Assistant &raquo; </a>

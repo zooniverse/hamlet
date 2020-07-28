@@ -302,6 +302,8 @@ def ml_subject_assistant_export_to_microsoft(
     service.
     """
     
+    print('[Subject Assistant] Exporting to Microsoft')
+    
     try:
         export = MLSubjectAssistantExport.objects.get(pk=export_id)
         target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
@@ -335,7 +337,7 @@ def ml_subject_assistant_export_to_microsoft(
         export.azure_url = shareable_file_url
         
         # Submit the ML task request to the ML service
-        export.ml_task_id = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
+        export.ml_task_uuid = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
         
         # SUCCESS
         export.status = MLSubjectAssistantExport.COMPLETE
@@ -362,6 +364,8 @@ def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
     export_id,
     access_token,
 ):
+    print('[Subject Assistant] Exporting to Microsoft 1/4: get Subjects')
+    
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
     data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
     
@@ -392,6 +396,9 @@ def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
     return data
 
 def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename):
+  
+    print('[Subject Assistant] Exporting to Microsoft 2/4: create file')
+    
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
   
     # Write the data to a file
@@ -411,6 +418,9 @@ def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, ta
         return source_filepath
     
     except Exception as err:
+
+        print('[ERROR] ', err)
+      
         # Only cleanup the temporary file on error; otherwise it'll be cleaned up in the main function.
         try:
             if len(source_filepath) > 0:
@@ -424,6 +434,9 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
     source_filepath,
     target_filename,
 ):
+  
+    print('[Subject Assistant] Exporting to Microsoft 3/4: create shareable Azure blob')
+  
     shareable_file_url = ''
   
     try:
@@ -455,27 +468,36 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
     return shareable_file_url
 
 def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
-    ml_task_id = None
+  
+    print('[Subject Assistant] Exporting to Microsoft 4/4: make request to Microsoft')
     
-    ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
-    ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
+    ml_task_uuid = None
+    
+    try:
+    
+        ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
+        ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
 
-    req_url = ml_service_url + '/request_detections'
-    req_body = {
-        'images_requested_json_sas': shareable_file_url,
-        'use_url': 'true',
-        'request_name': 'zooniverse-subject-assistant',  # Note: this field may be optional
-        'caller': ml_service_caller_id
-    }
+        req_url = ml_service_url + '/request_detections'
+        req_body = {
+            'images_requested_json_sas': shareable_file_url,
+            'use_url': 'true',
+            'request_name': 'zooniverse-subject-assistant',  # Note: this field may be optional
+            'caller': ml_service_caller_id
+        }
 
-    res = requests.post(
-        req_url,
-        json=req_body,
-        headers={'Content-Type': 'application/json'}
-    )
-    res.raise_for_status()
+        res = requests.post(
+            req_url,
+            json=req_body,
+            headers={'Content-Type': 'application/json'}
+        )
+        res.raise_for_status()
 
-    response_json = res.json()
-    ml_task_id = response_json['request_id']
+        response_json = res.json()
+        ml_task_uuid = response_json['request_id']
+    
+    except Exception as err:
+        print('[ERROR] ', err)
+        raise err
         
-    return ml_task_id
+    return ml_task_uuid
