@@ -25,10 +25,10 @@
         },
         "amqp": {
             "hashes": [
-                "sha256:24dbaff8ce4f30566bb88976b398e8c4e77637171af3af6f1b9650f48890e60b",
-                "sha256:bb68f8d2bced8f93ccfd07d96c689b716b3227720add971be980accfc2952139"
+                "sha256:70cdb10628468ff14e57ec2f751c7aa9e48e7e3651cfd62d431213c0c4e58f21",
+                "sha256:aa7f313fb887c91f15474c1229907a04dac0b8135822d6603437803424c0aa59"
             ],
-            "version": "==2.6.0"
+            "version": "==2.6.1"
         },
         "attrs": {
             "hashes": [
@@ -632,18 +632,18 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:71d45ae51c4c1a7ae485836016170a817d8d53292d940d04d72e49e473b98127",
-                "sha256:e855254817e289bb9a5fa3c143920c21ea8aeb424f1d4eed1e6c32d84dfd277d"
+                "sha256:273dbd8e26d4faa568e4cd4ca3180890b59ff0e3e8df7fb352796796c6808527",
+                "sha256:c12a0dc7021fca9d11c2bdbafdc44372e38180b56a1fab97c27b152f79455cd1"
             ],
-            "version": "==1.17.28"
+            "version": "==1.17.33"
         },
         "celery": {
             "hashes": [
-                "sha256:ef17d7dffde7fc73ecab3a3b6389d93d3213bac53fa7f28e68e33647ad50b916",
-                "sha256:fd77e4248bb1b7af5f7922dd8e81156f540306e3a5c4b1c24167c1f5f06025da"
+                "sha256:a92e1d56e650781fb747032a3997d16236d037c8199eacd5217d1a72893bca45",
+                "sha256:d220b13a8ed57c78149acf82c006785356071844afe0b27012a4991d44026f9f"
             ],
             "index": "pypi",
-            "version": "==4.4.6"
+            "version": "==4.4.7"
         },
         "certifi": {
             "hashes": [
@@ -822,10 +822,10 @@
         },
         "msrest": {
             "hashes": [
-                "sha256:1345f73c178a7b445716590bc1346d44ac47c647ee83be57a48e2027d618f17c",
-                "sha256:c51ac6ce2d151b47dd4b3eed0fb8596b6e7c2067eff6bb82e874beaf7bfec531"
+                "sha256:4993023011663b4273f15432fab75cc747dfa0bca1816d8122a7d1f9fdd9288d",
+                "sha256:5f4ef9b8cc207d93978b1a58f055179686b9f30a5e28041872db97a4a1c49b96"
             ],
-            "version": "==0.6.17"
+            "version": "==0.6.18"
         },
         "msrestazure": {
             "hashes": [
