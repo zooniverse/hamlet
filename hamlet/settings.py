@@ -95,7 +95,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD', 'hamlet'),
         'HOST': os.environ.get('DB_HOST', 'postgres'),
         'PORT': os.environ.get('DB_PORT', 5432),
-        'OPTIONS': {'sslmode': 'prefer'},
+        'OPTIONS': {'sslmode': os.environ.get('DB_SSL_MODE', 'prefer')},
     }
 }
 
