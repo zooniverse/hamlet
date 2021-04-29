@@ -49,6 +49,7 @@ services:
       - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
       - AWS_SECURITY_TOKEN=${AWS_SECURITY_TOKEN}
 
+  # Flower is a celery monitoring tool
   flower:
     build:
       context: .
