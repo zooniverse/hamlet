@@ -9,12 +9,14 @@ services:
       - "POSTGRES_PASSWORD=hamlet"
 
   redis:
-    image: redis:5.0.3-stretch
+    image: redis
     command: redis-server --appendonly yes
 
   app:
     build:
       context: .
+      args:
+        DJANGO_ENV: development
     volumes:
       - ./:/usr/src/app
     ports:
@@ -25,6 +27,7 @@ services:
     env_file:
       - .env
     environment:
+      - DEBUG=true
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -32,8 +35,7 @@ services:
       - AWS_SECURITY_TOKEN=${AWS_SECURITY_TOKEN}
 
   worker:
-    build:
-      context: .
+    image: hamlet:local
     command: bash ./start_worker.sh
     volumes:
       - ./:/usr/src/app
@@ -51,8 +53,7 @@ services:
 
   # Flower is a celery monitoring tool
   flower:
-    build:
-      context: .
+    image: hamlet:local
     command: celery -A hamlet flower --port=5555
     volumes:
       - ./:/usr/src/app
