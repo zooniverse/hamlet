@@ -13,6 +13,7 @@ services:
     command: redis-server --appendonly yes
 
   app:
+    image: hamlet:local
     build:
       context: .
       args:
