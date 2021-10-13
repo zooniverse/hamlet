@@ -74,13 +74,24 @@ Use docker & docker-compose to setup a development env.
 Alternatively yiou can use docker & compose to run an interactive bash shell for development and testing
 
 1. Run `docker-compose run --service-ports --rm app bash` to start the containers
-2. Run `pipenv run tests` to run the test suite in that shell
-3. Or `pipenv run server` to run the server (see Pipfile)
+2. Run `pipenv run tests` to run the test suite in that shell (sadly this system has no tests :sadpanda:)
+3. Or `./start_server.sh` to run the server (see Pipfile)
 
-#### Updating a package with pipenv
+### Updating a package with peotry
 
-Why is this so hard pipenv? https://github.com/pypa/pipenv/issues/2412#issuecomment-767193990
+- `poetry update django`
 
-Apparently this should work `pipenv update django` but it updates all outdated in the Pipfile.lock :( Why?!
+See [Poetry docs](https://python-poetry.org/docs/basic-usage/#installing-dependencies) for more details
 
-Workaround is to specify the version you want `pipenv install --keep-outdated django=='2.2.24'` and then undo any `Pipfile` changes...urgh!
+### Useful application scripts
+
+- console: `python manage.py shell`
+- create_local_db: `createdb -U halmet -O hamlet hamlet`
+- drop_local_db: `dropdb -U hamlet hamlet`
+- makemigrations: `python manage.py makemigrations`
+- migrate `python manage.py migrate`
+- server: `bash -e ./start_server.sh`
+- tests: `pytest --cov=hamlet`
+- tree: `bash -c 'find . | grep -v git | grep -v cache'`
+- worker: `bash -c ./start_worker.sh`
+

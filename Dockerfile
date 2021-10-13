@@ -11,21 +11,21 @@ RUN apt-get update \
     postgresql-client \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pip install \
-  pipenv
+RUN pip install poetry
 
 WORKDIR /usr/src/app
 
-COPY Pipfile ./
-COPY Pipfile.lock ./
+COPY pyproject.toml ./
+COPY poetry.toml ./
+COPY poetry.lock ./
 
 # set a default DJANGO_ENV for the build scripts
 ARG DJANGO_ENV=production
 ENV DJANGO_ENV=$DJANGO_ENV
 
 RUN if echo "development test" | grep -w "$DJANGO_ENV"; then \
-  pipenv install --system --dev; \
-  else pipenv install --system; fi
+  poetry install; \
+  else poetry install --no-dev; fi
 
 COPY . .
 
