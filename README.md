@@ -76,3 +76,11 @@ Alternatively yiou can use docker & compose to run an interactive bash shell for
 1. Run `docker-compose run --service-ports --rm app bash` to start the containers
 2. Run `pipenv run tests` to run the test suite in that shell
 3. Or `pipenv run server` to run the server (see Pipfile)
+
+#### Updating a package with pipenv
+
+Why is this so hard pipenv? https://github.com/pypa/pipenv/issues/2412#issuecomment-767193990
+
+Apparently this should work `pipenv update django` but it updates all outdated in the Pipfile.lock :( Why?!
+
+Workaround is to specify the version you want `pipenv install --keep-outdated django=='2.2.24'` and then undo any `Pipfile` changes...urgh!
