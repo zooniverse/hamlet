@@ -289,21 +289,21 @@ def ml_subject_assistant_export_to_microsoft(
     access_token,
 ):
     r"""Export a 'subject manifest' for the Microsoft ML server.
-    
+
     Creates a JSON file which details all the image URLs in a Subject Set, along
     with that image's associated Subject information. JSON will be formatted so:
-    
+
     [ [ "http://image.url/example.png",
        "{ \"subject_info\": \"is a stringified JSON object\" }" ],
       ... ]
-    
+
     To be used with the Zooniverse ML Subject Assistant web app (https://github.com/zooniverse/zoo-ml-subject-assistant),
     and the associated (and currently unnamed) Microsoft machine learning
     service.
     """
-    
+
     print('[Subject Assistant] Exporting to Microsoft')
-    
+
     try:
         export = MLSubjectAssistantExport.objects.get(pk=export_id)
         target_filename = 'ml-subject-assistant-{}-export{}.json'.format(
@@ -311,7 +311,7 @@ def ml_subject_assistant_export_to_microsoft(
             export.id,
         )
         source_filepath = ''
-        
+
         export.status = MLSubjectAssistantExport.RUNNING
         export.save()
 
@@ -323,7 +323,7 @@ def ml_subject_assistant_export_to_microsoft(
 
         # Upload the file to Azure, and get a shareable URL to the file
         shareable_file_url = ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(source_filepath, target_filename)
-        
+
         # Save the created file to the database
         # NOTE: this is technically optional, and only used as a backup
         with open(source_filepath, 'rb') as out_f:
@@ -331,18 +331,18 @@ def ml_subject_assistant_export_to_microsoft(
                 target_filename,
                 File(out_f),
             )
-        
+
         # Save a refrence to the shareable URL.
         # NOTE: these shareable URLs have a shelf life.
         export.azure_url = shareable_file_url
-        
+
         # Submit the ML task request to the ML service
         export.ml_task_uuid = ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url)
-        
+
         # SUCCESS
         export.status = MLSubjectAssistantExport.COMPLETE
         export.save()
-    
+
     except Exception as err:
         try:
             self.retry(countdown=60)
@@ -350,7 +350,7 @@ def ml_subject_assistant_export_to_microsoft(
             export.status = MLSubjectAssistantExport.FAILED
             export.save()
             raise err
-    
+
     finally:
         # Clean up the temporary file, if it exists.
         try:
@@ -365,10 +365,10 @@ def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
     access_token,
 ):
     print('[Subject Assistant] Exporting to Microsoft 1/4: get Subjects')
-    
+
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
     data = []  # Keeps track of all data items that needs to written into a Microsoft-friendly JSON format.
-    
+
     # Retrieve all Subjects from a Subject Set
     with SocialPanoptes(bearer_token=access_token) as p:
         subject_set = SubjectSet.find(export.subject_set_id)
@@ -396,11 +396,11 @@ def ml_subject_assistant_export_to_microsoft_pt1_get_subjects_data(
     return data
 
 def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, target_filename):
-  
+
     print('[Subject Assistant] Exporting to Microsoft 2/4: create file')
-    
+
     export = MLSubjectAssistantExport.objects.get(pk=export_id)
-  
+
     # Write the data to a file
     source_filepath = ''
     try:
@@ -414,31 +414,31 @@ def ml_subject_assistant_export_to_microsoft_pt2_create_file(export_id, data, ta
             json.dump(data, out_f)
             out_f.flush()
             source_filepath = out_f.name
-        
+
         return source_filepath
-    
+
     except Exception as err:
 
         print('[ERROR] ', err)
-      
+
         # Only cleanup the temporary file on error; otherwise it'll be cleaned up in the main function.
         try:
             if len(source_filepath) > 0:
                 os.unlink(source_filepath)
         except OSError:
             pass
-      
+
         raise err
-  
+
 def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
     source_filepath,
     target_filename,
 ):
-  
+
     print('[Subject Assistant] Exporting to Microsoft 3/4: create shareable Azure blob')
-  
+
     shareable_file_url = ''
-  
+
     try:
         block_blob_service = BlockBlobService(account_name=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME, account_key=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY)
 
@@ -464,17 +464,17 @@ def ml_subject_assistant_export_to_microsoft_pt3_create_shareable_azure_blob(
     except Exception as err:
         print('[ERROR] ', err)
         raise err
-    
+
     return shareable_file_url
 
 def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_url):
-  
+
     print('[Subject Assistant] Exporting to Microsoft 4/4: make request to Microsoft')
-    
+
     ml_task_uuid = None
-    
+
     try:
-    
+
         ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
         ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
 
@@ -489,15 +489,16 @@ def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_
         res = requests.post(
             req_url,
             json=req_body,
-            headers={'Content-Type': 'application/json'}
+            headers={'Content-Type': 'application/json'},
+            timeout=30
         )
         res.raise_for_status()
 
         response_json = res.json()
         ml_task_uuid = response_json['request_id']
-    
+
     except Exception as err:
         print('[ERROR] ', err)
         raise err
-        
+
     return ml_task_uuid
