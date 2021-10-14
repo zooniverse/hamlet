@@ -63,3 +63,35 @@ Mechanically, the ML Subject Assistant's "export to Microsoft" action performs t
 4. Submit the shareable URL to the ML Service, and get the "job ID" it returns.
 
 The Job ID plus the known Subject Assistant app URL is all that's required to construct a "return URL" for the user.
+
+## Development
+
+Use docker & docker-compose to setup a development env.
+
+1. Run `docker-compose build` to build the app container.
+2. Run the tests `docker-compose run -T --rm app bundle exec pipenv run tests`
+
+Alternatively yiou can use docker & compose to run an interactive bash shell for development and testing
+
+1. Run `docker-compose run --service-ports --rm app bash` to start the containers
+2. Run `pipenv run tests` to run the test suite in that shell (sadly this system has no tests :sadpanda:)
+3. Or `./start_server.sh` to run the server (see Pipfile)
+
+### Updating a package with peotry
+
+- `poetry update django`
+
+See [Poetry docs](https://python-poetry.org/docs/basic-usage/#installing-dependencies) for more details
+
+### Useful application scripts
+
+- console: `python manage.py shell`
+- create_local_db: `createdb -U halmet -O hamlet hamlet`
+- drop_local_db: `dropdb -U hamlet hamlet`
+- makemigrations: `python manage.py makemigrations`
+- migrate `python manage.py migrate`
+- server: `bash -e ./start_server.sh`
+- tests: `pytest --cov=hamlet`
+- tree: `bash -c 'find . | grep -v git | grep -v cache'`
+- worker: `bash -c ./start_worker.sh`
+
