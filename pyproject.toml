@@ -2,7 +2,7 @@
 name = "hamlet"
 version = "0.1.0"
 description = "Format data exports for external systems"
-authors = ["contact@zooniverse.org"]
+authors = ["Zooniverse Team <contact@zooniverse.org>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -10,7 +10,7 @@ django = "^2.2.24"
 celery = "*"
 oauthlib = "*"
 panoptes-client = ">=1.1.1"
-psycopg2-binary = "*"
+psycopg2-binary = "~2.8.6"
 pytest = "*"
 redis = "*"
 gunicorn = "*"
