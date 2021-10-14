@@ -6,7 +6,7 @@ authors = ["contact@zooniverse.org"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-django = "^2.2.24"
+django = "^3.2.8"
 celery = "*"
 oauthlib = "*"
 panoptes-client = ">=1.1.1"
