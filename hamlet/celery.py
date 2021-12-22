@@ -474,9 +474,19 @@ def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_
     ml_task_uuid = None
 
     try:
-
+        # the secret caller id used to identify ourselves via an allowlist on the hosted service
         ml_service_caller_id = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID')
+        # default to the externally hosted camera traps API service
         ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
+
+        # use Zooniverse k8s hosted camera traps API service if it's available at runtime
+        # https://github.com/zooniverse/CameraTraps/tree/zooniverse-deployment
+        camera_traps_api_host = os.getenv('CAMERA_TRAPS_API_SERVICE_HOST')
+        if camera_traps_api_host:
+          camera_traps_api_host_path = os.getenv(
+              'CAMERA_TRAPS_API_SERVICE_HOST_PATH', '/v4/camera-trap/detection-batch'
+          )
+          ml_service_url = 'http://' + camera_traps_api_host + camera_traps_api_host_path
 
         req_url = ml_service_url + '/request_detections'
         req_body = {
