@@ -414,3 +414,40 @@ spec:
       port: 6379
       targetPort: 6379
   type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hamlet-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-body-size: 6m
+spec:
+  tls:
+  - hosts:
+    - hamlet.zooniverse.org
+    secretName: zooniverse-org-tls
+  rules:
+  - host: hamlet-staging.zooniverse.org
+    http:
+      http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: hamlet-staging
+            port:
+              number: 80
+  - host: hamlet.zooniverse.org
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: hamlet-staging
+            port:
+              number: 80
