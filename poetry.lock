@@ -2047,7 +2047,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "1429d6dc728c342eddb6de571b6336c13df7df972fabccfd524f2da7bb6b1a9a"
+content-hash = "9bc785996c67a0722be5308061724059222c372a772a37f8d6fa95eb8f7179c7"
 
 [metadata.files]
 adal = [
