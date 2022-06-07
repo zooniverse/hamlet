@@ -65,8 +65,18 @@ spec:
                memory: "100Mi"
                cpu: "10m"
              limits:
-               memory: "100Mi"
-               cpu: "500m"
+               memory: "500Mi"
+               cpu: "1000m"
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8080
+              httpHeaders:
+                 - name: Host
+                   value: "hamlet-staging.zooniverse.org"
+            # wait 6 * 10 seconds(default periodSeconds) for the container to start
+            # after this succeeds once the liveness probe takes over
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /
@@ -74,7 +84,19 @@ spec:
               httpHeaders:
                  - name: Host
                    value: "hamlet-staging.zooniverse.org"
-            initialDelaySeconds: 10
+            # allow a longer response time than 1s
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              httpHeaders:
+                 - name: Host
+                   value: "hamlet-staging.zooniverse.org"
+            # start checking for readiness after 20s (to serve traffic)
+            initialDelaySeconds: 20
+            # allow a longer response time than 1s
+            timeoutSeconds: 10
           env:
             - name: DB_SSL_MODE
               value: require
@@ -392,3 +414,40 @@ spec:
       port: 6379
       targetPort: 6379
   type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hamlet-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-body-size: 6m
+spec:
+  tls:
+  - hosts:
+    - hamlet.zooniverse.org
+    secretName: zooniverse-org-tls
+  rules:
+  - host: hamlet-staging.zooniverse.org
+    http:
+      http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: hamlet-staging
+            port:
+              number: 80
+  - host: hamlet.zooniverse.org
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: hamlet-staging
+            port:
+              number: 80
