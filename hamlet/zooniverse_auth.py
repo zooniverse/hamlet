@@ -5,13 +5,14 @@ from django.conf import settings
 from social_core.backends.oauth import BaseOAuth2
 from panoptes_client import Panoptes, ProjectRole
 
+import os
 
 class ZooniverseOAuth2(BaseOAuth2):
     name = 'zooniverse'
-    AUTHORIZATION_URL = 'https://panoptes.zooniverse.org/oauth/authorize'
-    ACCESS_TOKEN_URL = 'https://panoptes.zooniverse.org/oauth/token'
+    AUTHORIZATION_URL = os.getenv('OAUTH_AUTHORIZATION_URL', 'https://www.zooniverse.org/oauth/authorize')
+    ACCESS_TOKEN_URL = os.getenv('OAUTH_ACCESS_TOKEN_URL', 'https://www.zooniverse.org/oauth/token') 
     ACCESS_TOKEN_METHOD = 'POST'
-    REVOKE_TOKEN_URL = 'https://panoptes.zooniverse.org/oauth/revoke'
+    REVOKE_TOKEN_URL = os.getenv('OAUTH_REVOKE_TOKEN_URL', 'https://www.zooniverse.org/oauth/revoke') 
     REVOKE_TOKEN_METHOD = 'GET'
 
     def get_user_details(self, response):
