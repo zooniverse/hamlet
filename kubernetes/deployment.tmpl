@@ -59,7 +59,7 @@ spec:
     spec:
       containers:
         - name: hamlet-staging-app
-          image: zooniverse/hamlet:__IMAGE_TAG__
+          image: ghcr.io/zooniverse/hamlet:__IMAGE_TAG__
           resources:
              requests:
                memory: "100Mi"
@@ -231,7 +231,7 @@ spec:
     spec:
       containers:
         - name: hamlet-staging-celery
-          image: zooniverse/hamlet:__IMAGE_TAG__
+          image: ghcr.io/zooniverse/hamlet:__IMAGE_TAG__
           resources:
              requests:
                memory: "250Mi"
