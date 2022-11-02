@@ -479,7 +479,9 @@ def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_
         # default to the externally hosted camera traps API service
         ml_service_url = os.environ.get('SUBJECT_ASSISTANT_ML_SERVICE_URL')
 
-        # use Zooniverse k8s hosted camera traps API service if it's available at runtime
+        # use Zooniverse k8s hosted camera traps API service if available
+        # this env var is automatically setup by our K8s system via the Camera Traps Api service definition
+        # thus if this is present, we're running in the Zooniverse K8s cluster!
         # https://github.com/zooniverse/CameraTraps/tree/zooniverse-deployment
         camera_traps_api_host = os.getenv('CAMERA_TRAPS_API_SERVICE_HOST')
         if camera_traps_api_host:
