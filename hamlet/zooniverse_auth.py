@@ -29,7 +29,7 @@ class ZooniverseOAuth2(BaseOAuth2):
 class SocialPanoptes(Panoptes):
     def __init__(
         self,
-        endpoint=None,
+        endpoint=settings.ZOONIVERSE_API_ENDPOINT,
         client_id=settings.SOCIAL_AUTH_ZOONIVERSE_KEY,
         client_secret=None,
         redirect_url=None,
