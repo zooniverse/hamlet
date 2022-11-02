@@ -10,6 +10,7 @@ python manage.py migrate --noinput
 
 if [ "$DJANGO_ENV" == "production" ] || [ "$DJANGO_ENV" == "staging" ]; then
   if [ ! -d "hamlet/static" ]; then
+    if [ -f "commit_id.txt" ]; then cp commit_id.txt static/ ; fi
     echo Generating static files
     python manage.py collectstatic --clear --no-input
   fi
