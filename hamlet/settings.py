@@ -203,6 +203,8 @@ CAESAR_URL = os.environ.get(
     'https://caesar.zooniverse.org',
 )
 
+ZOONIVERSE_API_ENDPOINT = os.getenv('ZOONIVERSE_API_ENDPOINT', None)
+
 SUBJECT_ASSISTANT_EXTERNAL_URL = os.environ.get('SUBJECT_ASSISTANT_EXTERNAL_URL', 'https://subject-assistant.zooniverse.org/#/tasks/')
 SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
 SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
