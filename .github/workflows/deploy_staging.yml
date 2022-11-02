@@ -1,0 +1,42 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build_and_push_image:
+    name: Build and Push Image
+    uses: zooniverse/ci-cd/.github/workflows/build_and_push_image.yaml@main
+    with:
+      repo_name: hamlet
+      commit_id: ${{ github.sha }}
+      latest: true
+
+  deploy_staging:
+    name: Deploy to Staging
+    uses: zooniverse/ci-cd/.github/workflows/deploy_app.yaml@main
+    needs: [build_and_push_image]
+    with:
+      app_name: hamlet
+      repo_name: hamlet
+      commit_id: ${{ github.sha }}
+      environment: staging
+    secrets:
+      creds: ${{ secrets.AZURE_AKS }}
+
+  slack_notification:
+    name: Slack notification
+    uses: zooniverse/ci-cd/.github/workflows/slack_notification.yaml@main
+    needs: deploy_staging
+    if: always()
+    with:
+      commit_id: ${{ github.sha }}
+      job_name: Build and Push Image / build_and_push_image
+      status: ${{ needs.deploy_staging.result }}
+      title: "Hamlet Staging deploy & migration complete"
+      title_link: "https://hamlet-staging.zooniverse.org"
+    secrets:
+      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
