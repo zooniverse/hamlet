@@ -157,6 +157,10 @@ SOCIAL_AUTH_ZOONIVERSE_SECRET = os.environ.get(
     '',
 )
 
+# set the session length to be the same as the social auth token
+# https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html
+SOCIAL_AUTH_SESSION_EXPIRATION = True
+
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
