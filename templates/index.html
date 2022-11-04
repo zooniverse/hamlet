@@ -26,7 +26,8 @@
         <b>{{ project.display_name }}</b>
         <ul>
           <li><a href="{% url 'project' project.id %}">AutoML Export &raquo;</a></li>
-          <li><a href="{% url 'ml_subject_assistant_list' project.id %}">Subject Assistant &raquo;</a></li>
+          <li><a href="{% url 'ml_subject_assistant_list' project.id %}">Camera Traps Subject Assistant &raquo;</a></li>
+          <li><a href="{% url 'zoobot_subject_assistant_list' project.id %}">Zoobot Subject Assistant &raquo;</a></li>
         </ul>
       </li>
       {% endfor %}
