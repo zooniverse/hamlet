@@ -24,10 +24,11 @@ django.setup()
 from django.conf import settings
 from django.core.files import File
 
-from exports.models import SubjectSetExport, MediaMetadata, WorkflowExport, MLSubjectAssistantExport
+from exports.models import SubjectSetExport, MediaMetadata, WorkflowExport, MLSubjectAssistantExport, KadeSubjectAssistantExport
 from .zooniverse_auth import SocialPanoptes
 from . import ms_ml_exports
 from . import kade_ml_exports
+from . import kade_service
 
 app = Celery('hamlet', broker=settings.REDIS_URI, backend=settings.REDIS_URI)
 
@@ -380,14 +381,14 @@ def zoobot_subject_assistant_export_to_kade(
     print('[Subject Assistant] Exporting to KaDE Zoobot Prediction Service')
 
     try:
-        export = MLSubjectAssistantExport.objects.get(pk=export_id)
+        export = KadeSubjectAssistantExport.objects.get(pk=export_id)
         target_filename = 'zoobot-subject-assistant-{}-export{}.json'.format(
             export.subject_set_id,
             export.id,
         )
         source_filepath = ''
 
-        export.status = MLSubjectAssistantExport.RUNNING
+        export.status = KadeSubjectAssistantExport.RUNNING
         export.save()
 
         # Get the Subjects data
@@ -404,17 +405,18 @@ def zoobot_subject_assistant_export_to_kade(
         export.azure_url = shareable_file_url
 
         # Submit the ML task request to the ML service
-        export.ml_task_uuid = kade_ml_exports.subject_assistant_export_to_kade(shareable_file_url)
+        kade_service_job_id = kade_ml_exports.subject_assistant_export_to_kade(shareable_file_url)
+        export.service_job_url = f'{kade_service.url()}/{kade_service_job_id}'
 
         # SUCCESS
-        export.status = MLSubjectAssistantExport.COMPLETE
+        export.status = KadeSubjectAssistantExport.COMPLETE
         export.save()
 
     except Exception as err:
         try:
             self.retry(countdown=60)
         except MaxRetriesExceededError:
-            export.status = MLSubjectAssistantExport.FAILED
+            export.status = KadeSubjectAssistantExport.FAILED
             export.save()
             raise err
 

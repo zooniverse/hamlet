@@ -26,7 +26,7 @@
 
   <h3>Subject Sets for Project: {{ project_id }}</h3>
   <ul>
-    {% for subject_set, data_export, kade_job_id_from_uuid, external_web_app_url in resources %}
+    {% for subject_set, data_export, external_web_app_url in resources %}
       <li style="margin: 1em auto">
         <form
           action="{% url 'zoobot_subject_assistant_export' project_id subject_set.id %}"
@@ -45,10 +45,11 @@
             {% endif %}
           </div>
 
-          {% if data_export.ml_task_uuid %}
+          {% if data_export.service_job_url %}
           <div>
             <label style="display: block">
-              Zoobot Prediction Job ID: {{ kade_job_id_from_uuid }}
+              View the prediction job via the KaDE system:
+              <a href="{{ data_export.service_job_url }}">KaDE Prediction Job URL</a>
             </label>
 
             <a style="display: block" target="_blank" href="{{external_web_app_url}}">View the results on the Subject Assistant &raquo; </a>

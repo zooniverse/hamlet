@@ -12,8 +12,8 @@ django.setup()
 
 from django.conf import settings
 
-from exports.models import MLSubjectAssistantExport
 from .zooniverse_auth import SocialPanoptes
+from . import kade_service
 from panoptes_client import SubjectSet
 
 
@@ -134,44 +134,32 @@ def subject_assistant_export_to_kade(shareable_file_url):
 
     print('[Subject Assistant] Exporting to KaDE: make request to KaDE Prediction API service')
 
-    ml_task_uuid = None
+    kade_job_id = None
 
-    # construct the KaDE service host ENV name from K8s env vars
-    # this will be an internal k8s cluster host DNS so avoids routing through the internet
-    service_env = 'PRODUCTION' if os.environ.get('DJANGO_ENV') == 'production' else 'STAGING'
+    req_body = {
+        'prediction_job': {
+            'manifest_url': shareable_file_url
+        }
+    }
 
     try:
-        # default to the externally hosted camera traps API service
-        kade_service_host = os.environ.get(
-            f'KADE_{service_env}_APP_SERVICE_HOST', 'kade-staging.zooniverse.org')
-        kade_service_url = f'https://{kade_service_host}/prediction_jobs'
-
-        req_body = {
-            'prediction_job': {
-                'manifest_url': shareable_file_url
-            }
-        }
-
-        # configure the KaDE API basic auth credentials
-        kade_basic_auth_username = os.environ.get('KADE_API_BASIC_AUTH_USERNAME')
-        kade_basic_auth_password = os.environ.get('KADE_API_BASIC_AUTH_PASSWORD')
-
         # submit the manifest to the KaDE predictions API
         res = requests.post(
-            kade_service_url,
+            kade_service.url(),
             json=req_body,
             headers={'Content-Type': 'application/json'},
-            auth=(kade_basic_auth_username, kade_basic_auth_password),
+            auth=(kade_service.basic_auth_username(),
+                  kade_service.basic_auth_password()),
             timeout=30
         )
         res.raise_for_status()
 
         response_json = res.json()
-        ml_task_uuid = response_json['id']
+        kade_job_id = response_json['id']
 
     except Exception as err:
         print('[ERROR] ', err)
         raise err
 
-    return ml_task_uuid
+    return kade_job_id
 
