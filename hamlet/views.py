@@ -12,7 +12,7 @@ from social_django.utils import load_strategy
 
 from exports.forms import WorkflowExportForm
 from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport
-from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft
+from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft, zoobot_subject_assistant_export_to_kade
 from .zooniverse_auth import SocialPanoptes
 
 
@@ -178,14 +178,17 @@ def zoobot_subject_assistant_list(request, project_id):
                 subject_set_id=subject_set.id
             ).order_by('-created').first()
 
-            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_URL
+            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_KADE_URL
             if data_export and data_export.ml_task_uuid:
-                external_web_app_url = external_web_app_url + \
-                    str(data_export.ml_task_uuid)
+                # reformat the URL sent to the subject assitant to specify the
+                # KaDE system job id as a query param before the hash routing path
+                # https://subject-assistant.zooniverse.org?kade_job_id=1/#/tasks/
+                external_web_app_url += f'?kade_job_id={int(data_export.ml_task_uuid)}/#/tasks/'
 
             context_resources.append((
                 subject_set,
                 data_export,
+                int(data_export.ml_task_uuid),
                 external_web_app_url
             ))
 

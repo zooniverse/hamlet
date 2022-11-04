@@ -210,6 +210,8 @@ CAESAR_URL = os.environ.get(
 ZOONIVERSE_API_ENDPOINT = os.getenv('ZOONIVERSE_API_ENDPOINT', None)
 
 SUBJECT_ASSISTANT_EXTERNAL_URL = os.environ.get('SUBJECT_ASSISTANT_EXTERNAL_URL', 'https://subject-assistant.zooniverse.org/#/tasks/')
+# simpler to split the url and the paths up and avoid changing the old code -- no tests :(
+SUBJECT_ASSISTANT_EXTERNAL_KADE_URL = os.environ.get('SUBJECT_ASSISTANT_EXTERNAL_URL', 'https://subject-assistant.zooniverse.org')
 SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
 SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
 SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME = os.environ.get('SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
