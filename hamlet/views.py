@@ -202,19 +202,19 @@ def zoobot_subject_assistant_list(request, project_id):
 def zoobot_subject_assistant_export(request, subject_set_id, project_id):
     """Export Action: sets up a Subject Set to be exported to a machine learning server."""
 
-    # # Check permissions
-    # with social_context(request) as p:
-    #     if not p.collab_for_project(project_id):
-    #         raise PermissionDenied
+    # Check permissions
+    with social_context(request) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
 
-    #     # Create data export
-    #     export = MLSubjectAssistantExport.objects.create(
-    #         subject_set_id=subject_set_id,
-    #     )
-    #     task_result = ml_subject_assistant_export_to_microsoft.delay(
-    #         export.id,
-    #         p.bearer_token,
-    #     )
-    #     export.celery_task = task_result.id
-    #     export.save()
+        # Create data export
+        export = MLSubjectAssistantExport.objects.create(
+            subject_set_id=subject_set_id,
+        )
+        task_result = zoobot_subject_assistant_export_to_kade.delay(
+            export.id,
+            p.bearer_token,
+        )
+        export.celery_task = task_result.id
+        export.save()
     return redirect('zoobot_subject_assistant_list', project_id=project_id)
