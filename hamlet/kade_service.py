@@ -14,9 +14,9 @@ def env_string_upcase():
 
 def public_url():
     if env_string() == 'production':
-        return 'https://kade.zooniverse.org'
+        return 'https://kade.zooniverse.org/prediction_jobs'
     else:
-        return 'https://kade-staging.zooniverse.org'
+        return 'https://kade-staging.zooniverse.org/prediction_jobs'
 
 
 def url():
