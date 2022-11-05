@@ -382,10 +382,7 @@ def zoobot_subject_assistant_export_to_kade(
 
     try:
         export = KadeSubjectAssistantExport.objects.get(pk=export_id)
-        target_filename = 'zoobot-subject-assistant-{}-export{}.json'.format(
-            export.subject_set_id,
-            export.id,
-        )
+        target_filename = f'catalogues/{kade_service.env_string()}/zoobot-subject-assistant-{export.subject_set_id}-export{export.id}.json'
         source_filepath = ''
 
         export.status = KadeSubjectAssistantExport.RUNNING

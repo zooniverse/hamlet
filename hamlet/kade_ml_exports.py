@@ -98,27 +98,26 @@ def subject_assistant_export_to_shareable_blob_storage_location(
     shareable_file_url = ''
 
     try:
-        # short term these files will upload to the camera traps blob storage account
-        # TODO: add new ENV vars to ensure these are isolated into the Zoobot blob storage account
         block_blob_service = BlockBlobService(
-            account_name=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME, account_key=settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY)
+            account_name=settings.KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME,
+            account_key=settings.KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY)
 
         block_blob_service.create_blob_from_path(
-            settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME, target_filename, source_filepath)
+            settings.KADE_SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME, target_filename, source_filepath)
 
         blob_permissions = BlobPermissions(read=True)
         sas_expiry = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
 
         generated_sas = block_blob_service.generate_blob_shared_access_signature(
-            container_name=settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
+            container_name=settings.KADE_SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
             blob_name=target_filename,
             permission=blob_permissions,
             expiry=sas_expiry
         )
 
         shareable_file_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
-            settings.SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME,
-            settings.SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
+            settings.KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME,
+            settings.KADE_SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME,
             target_filename,
             generated_sas
         )

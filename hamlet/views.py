@@ -178,7 +178,7 @@ def zoobot_subject_assistant_list(request, project_id):
                 subject_set_id=subject_set.id
             ).order_by('-created').first()
 
-            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_KADE_URL
+            external_web_app_url = settings.KADE_SUBJECT_ASSISTANT_EXTERNAL_URL
             if data_export and data_export.service_job_url:
                 # reformat the URL sent to the subject assitant to specify the
                 # KaDE system job id as a query param before the hash routing path
