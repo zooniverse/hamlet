@@ -106,82 +106,23 @@ spec:
           env:
             - name: DB_SSL_MODE
               value: require
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_HOST
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_USER
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_PASSWORD
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_NAME
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SECRET_KEY
-            - name: PANOPTES_APPLICATION_ID
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: PANOPTES_APPLICATION_ID
-            - name: PANOPTES_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: PANOPTES_SECRET
-            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
-            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
-            - name: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
-            - name: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
-            - name: SUBJECT_ASSISTANT_ML_SERVICE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_ML_SERVICE_URL
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: AWS_ACCESS_KEY_ID
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: AWS_SECRET_ACCESS_KEY
             - name: DJANGO_ENV
               value: staging
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
             - name: STATIC_ROOT
               value: "/static-assets/static/"
+            - name: ZOONIVERSE_API_ENDPOINT
+              value: "https://panoptes-staging.zooniverse.org"
+            - name: OAUTH_AUTHORIZATION_URL
+              value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
+            - name: OAUTH_ACCESS_TOKEN_URL
+              value: "https://panoptes-staging.zooniverse.org/oauth/token"
+            - name: OAUTH_REVOKE_TOKEN_URL
+              value: "https://panoptes-staging.zooniverse.org/oauth/revoke"
+          envFrom:
+            - secretRef:
+                name: hamlet-staging-conf
           volumeMounts:
             - name: static-assets
               mountPath: "/static-assets"
@@ -249,82 +190,23 @@ spec:
           env:
             - name: DB_SSL_MODE
               value: require
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_HOST
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_USER
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_PASSWORD
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: DB_NAME
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SECRET_KEY
-            - name: PANOPTES_APPLICATION_ID
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: PANOPTES_APPLICATION_ID
-            - name: PANOPTES_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: PANOPTES_SECRET
-            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME
-            - name: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY
-            - name: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME
-            - name: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_ML_SERVICE_CALLER_ID
-            - name: SUBJECT_ASSISTANT_ML_SERVICE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: SUBJECT_ASSISTANT_ML_SERVICE_URL
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: AWS_ACCESS_KEY_ID
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hamlet-staging-conf
-                  key: AWS_SECRET_ACCESS_KEY
             - name: DJANGO_ENV
               value: staging
             - name: REDIS_URI
               value: "redis://hamlet-staging-redis"
             - name: TMP_STORAGE_PATH
               value: "/export-tmp"
+            - name: ZOONIVERSE_API_ENDPOINT
+              value: "https://panoptes-staging.zooniverse.org"
+            - name: OAUTH_AUTHORIZATION_URL
+              value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
+            - name: OAUTH_ACCESS_TOKEN_URL
+              value: "https://panoptes-staging.zooniverse.org/oauth/token"
+            - name: OAUTH_REVOKE_TOKEN_URL
+              value: "https://panoptes-staging.zooniverse.org/oauth/revoke"
+          envFrom:
+            - secretRef:
+                name: hamlet-staging-conf
           volumeMounts:
           - name: hamlet-staging-export-tmp
             mountPath: "/export-tmp"
