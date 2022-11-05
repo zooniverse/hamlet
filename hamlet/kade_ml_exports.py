@@ -146,7 +146,7 @@ def subject_assistant_export_to_kade(shareable_file_url):
         res = requests.post(
             kade_service.url(),
             json=req_body,
-            headers={'Content-Type': 'application/json'},
+            headers=kade_service.headers(),
             auth=(kade_service.basic_auth_username(),
                   kade_service.basic_auth_password()),
             timeout=30
