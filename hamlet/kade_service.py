@@ -12,6 +12,13 @@ def env_string():
 def env_string_upcase():
     return env_string().upper()
 
+def public_url():
+    if env_string() == 'production':
+        return 'https://kade.zooniverse.org'
+    else:
+        return 'https://kade-staging.zooniverse.org'
+
+
 def url():
     # allow service URL to be set by env vars
     kade_service_url = os.environ.get('KADE_SUBJECT_ASSISTANT_SERVICE_URL')
