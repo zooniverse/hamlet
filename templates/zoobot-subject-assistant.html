@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project_id }} &ndash; {{ block.super }}{% endblock %}
+
+{% block content %}
+
+  <h2>Subject Assistant - Export Data to Zoobot Machine Learning Service</h2>
+
+  <section class="info">
+    <p>
+      This section of the Hamlet service is designed to work with the <a href="https://subject-assistant.zooniverse.org/" target="_blank">Zooniverse Subject Assistant</a> web app, and allows you to <b>export your Subject Sets</b> from project ID {{ project_id }} to the Zoobot Machine Learning Service to <b>classify galaxy morphologies in your subject images.</b>
+    </p>
+
+    <p>If you're unsure what's going on here or what to do next, please read the introduction/explainers on the <a href="https://subject-assistant.zooniverse.org/" target="_blank">Zooniverse Subject Assistant</a> web app.</p>
+
+    <ol>
+      <li>Choose a Subject Set whose photos you want to export.</li>
+      <li>Click 'Generate' to submit your Subject Set to the the Zoobot Machine Learning Service.</li>
+      <li>Wait a minute before refreshing the page.</li>
+      <li>Click on 'View the results on the Subject Assistant' to be taken back to the Subject Assistant web app.</li>
+      <li>The Subject Assistant web app will guide you through the rest of the process.</li>
+    </ol>
+
+    <p>⚠️ Please note that it may take a while for your job to be processed. It will take only <b>a few minutes</b> for your Subject Set to be exported to the Zoobot ML Service, but it can take <b>a while</b> for the Zoobot ML Service to process all the subjects in the subject set.</p>
+  </section>
+
+  <h3>Subject Sets for Project: {{ project_id }}</h3>
+  <ul>
+    {% for subject_set, data_export, external_web_app_url in resources %}
+      <li style="margin: 1em auto">
+        <form
+          action="{% url 'zoobot_subject_assistant_export' project_id subject_set.id %}"
+          method="post"
+        >
+          <div>
+            {% csrf_token %}
+            <b>{{ subject_set.id }} - {{ subject_set.display_name }}:</b> <input type="submit" value="Generate">
+            {% if data_export %}
+              &nbsp;&middot;&nbsp;
+              {{ data_export.get_status_display }}
+
+              {% if data_export.get_status_display == 'Running' %}
+              -- please refresh this page in one minute
+              {% endif %}
+            {% endif %}
+          </div>
+
+          {% if data_export.service_job_url %}
+          <div>
+            <label style="display: block">
+              View the prediction job via the KaDE system:
+              <a href="{{ data_export.service_job_url }}">KaDE Prediction Job URL</a>
+            </label>
+
+            <a style="display: block" target="_blank" href="{{external_web_app_url}}">View the results on the Subject Assistant &raquo; </a>
+          </div>
+          {% endif %}
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

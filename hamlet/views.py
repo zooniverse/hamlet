@@ -11,8 +11,8 @@ from panoptes_client import Panoptes, Project, SubjectSet, Workflow
 from social_django.utils import load_strategy
 
 from exports.forms import WorkflowExportForm
-from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport
-from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft
+from exports.models import SubjectSetExport, WorkflowExport, MLSubjectAssistantExport, KadeSubjectAssistantExport
+from .celery import subject_set_export, workflow_export, ml_subject_assistant_export_to_microsoft, zoobot_subject_assistant_export_to_kade
 from .zooniverse_auth import SocialPanoptes
 
 
@@ -105,10 +105,10 @@ def workflow(request, workflow_id, project_id):
     return redirect('project', project_id=project_id)
 
 
-@login_required
+@login_required()
 def ml_subject_assistant_list(request, project_id):
     """List Page: shows all Subject Sets for a specific Project."""
-  
+
     with social_context(request) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
@@ -119,11 +119,11 @@ def ml_subject_assistant_list(request, project_id):
             data_export = MLSubjectAssistantExport.objects.filter(
                 subject_set_id=subject_set.id
             ).order_by('-created')
-            
-            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_URL 
+
+            external_web_app_url = settings.SUBJECT_ASSISTANT_EXTERNAL_URL
             if data_export.first() and data_export.first().ml_task_uuid:
                 external_web_app_url = external_web_app_url + str(data_export.first().ml_task_uuid)
-          
+
             ml_subject_assistant_exports.append((
                 subject_set,
                 data_export,
@@ -144,12 +144,12 @@ def ml_subject_assistant_list(request, project_id):
 @require_POST
 def ml_subject_assistant_export(request, subject_set_id, project_id):
     """Export Action: sets up a Subject Set to be exported to a machine learning server."""
-  
+
     # Check permissions
     with social_context(request) as p:
         if not p.collab_for_project(project_id):
             raise PermissionDenied
-    
+
         # Create data export
         export = MLSubjectAssistantExport.objects.create(
             subject_set_id=subject_set_id,
@@ -161,3 +161,63 @@ def ml_subject_assistant_export(request, subject_set_id, project_id):
         export.celery_task = task_result.id
         export.save()
     return redirect('ml_subject_assistant_list', project_id=project_id)
+
+
+@login_required()
+def zoobot_subject_assistant_list(request, project_id):
+    """List Page: shows all Subject Sets for a specific Project."""
+
+    with social_context(request) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+
+        context_resources = []
+
+        for subject_set in SubjectSet.where(project_id=project_id):
+            data_export = KadeSubjectAssistantExport.objects.filter(
+                subject_set_id=subject_set.id
+            ).order_by('-created').first()
+
+            external_web_app_url = settings.KADE_SUBJECT_ASSISTANT_EXTERNAL_URL
+            if data_export and data_export.service_job_url:
+                # reformat the URL sent to the subject assitant to specify the
+                # KaDE system job id as a query param before the hash routing path
+                # https://subject-assistant.zooniverse.org?kade_job_url=.../#/tasks/
+                external_web_app_url += f'?kade_job_url={str(data_export.service_job_url)}/#/tasks/'
+
+
+            context_resources.append((
+                subject_set,
+                data_export,
+                external_web_app_url
+            ))
+
+        context = {
+            'project_id': project_id,
+            'resources': context_resources
+        }
+
+        return render(request, 'zoobot-subject-assistant.html', context)
+
+
+@login_required
+@require_POST
+def zoobot_subject_assistant_export(request, subject_set_id, project_id):
+    """Export Action: sets up a Subject Set to be exported to a machine learning server."""
+
+    # Check permissions
+    with social_context(request) as p:
+        if not p.collab_for_project(project_id):
+            raise PermissionDenied
+
+        # Create data export
+        export = KadeSubjectAssistantExport.objects.create(
+            subject_set_id=subject_set_id,
+        )
+        task_result = zoobot_subject_assistant_export_to_kade.delay(
+            export.id,
+            p.bearer_token,
+        )
+        export.celery_task = task_result.id
+        export.save()
+    return redirect('zoobot_subject_assistant_list', project_id=project_id)

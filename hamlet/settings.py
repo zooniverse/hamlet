@@ -157,6 +157,10 @@ SOCIAL_AUTH_ZOONIVERSE_SECRET = os.environ.get(
     '',
 )
 
+# set the session length to be the same as the social auth token
+# https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html
+SOCIAL_AUTH_SESSION_EXPIRATION = True
+
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -203,7 +207,17 @@ CAESAR_URL = os.environ.get(
     'https://caesar.zooniverse.org',
 )
 
+ZOONIVERSE_API_ENDPOINT = os.getenv('ZOONIVERSE_API_ENDPOINT', None)
+
+# Camera Traps ML service settings
 SUBJECT_ASSISTANT_EXTERNAL_URL = os.environ.get('SUBJECT_ASSISTANT_EXTERNAL_URL', 'https://subject-assistant.zooniverse.org/#/tasks/')
 SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
 SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY = os.environ.get('SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
 SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME = os.environ.get('SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
+
+# KaDE ML service settings
+KADE_SUBJECT_ASSISTANT_EXTERNAL_URL = os.environ.get('KADE_SUBJECT_ASSISTANT_EXTERNAL_URL', 'https://subject-assistant.zooniverse.org')
+KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME = os.environ.get('KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_NAME')
+KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY = os.environ.get('KADE_SUBJECT_ASSISTANT_AZURE_ACCOUNT_KEY')
+KADE_SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME = os.environ.get('KADE_SUBJECT_ASSISTANT_AZURE_CONTAINER_NAME')
+

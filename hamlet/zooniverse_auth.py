@@ -10,16 +10,23 @@ import os
 class ZooniverseOAuth2(BaseOAuth2):
     name = 'zooniverse'
     AUTHORIZATION_URL = os.getenv('OAUTH_AUTHORIZATION_URL', 'https://www.zooniverse.org/oauth/authorize')
-    ACCESS_TOKEN_URL = os.getenv('OAUTH_ACCESS_TOKEN_URL', 'https://www.zooniverse.org/oauth/token') 
+    ACCESS_TOKEN_URL = os.getenv('OAUTH_ACCESS_TOKEN_URL', 'https://www.zooniverse.org/oauth/token')
     ACCESS_TOKEN_METHOD = 'POST'
-    REVOKE_TOKEN_URL = os.getenv('OAUTH_REVOKE_TOKEN_URL', 'https://www.zooniverse.org/oauth/revoke') 
+    REVOKE_TOKEN_URL = os.getenv('OAUTH_REVOKE_TOKEN_URL', 'https://www.zooniverse.org/oauth/revoke')
     REVOKE_TOKEN_METHOD = 'GET'
+    # ensure we store the expires_in time of the token
+    # this is used to set the default django session length
+    # and ensure the user has to log in again to gain access
+    # and avoids having expired tokens / 403 access errors to restricted API resources
+    EXTRA_DATA = [
+        ('expires_in', 'expires')
+    ]
 
     def get_user_details(self, response):
-        with SocialPanoptes(bearer_token=response['access_token']) as p:
+        with SocialPanoptes(bearer_token=response['access_token']) as sp:
             return {
-                'username': p.me['login'],
-                'email': p.me['email'],
+                'username': sp.me['login'],
+                'email': sp.me['email'],
             }
 
     def get_user_id(self, details, response):
@@ -29,7 +36,7 @@ class ZooniverseOAuth2(BaseOAuth2):
 class SocialPanoptes(Panoptes):
     def __init__(
         self,
-        endpoint=None,
+        endpoint=settings.ZOONIVERSE_API_ENDPOINT,
         client_id=settings.SOCIAL_AUTH_ZOONIVERSE_KEY,
         client_secret=None,
         redirect_url=None,
