@@ -403,7 +403,7 @@ def zoobot_subject_assistant_export_to_kade(
 
         # Submit the ML task request to the ML service
         kade_service_job_id = kade_ml_exports.subject_assistant_export_to_kade(shareable_file_url)
-        export.service_job_url = f'{kade_service.url()}/{kade_service_job_id}'
+        export.service_job_url = f'{kade_service.public_url()}/{kade_service_job_id}'
 
         # SUCCESS
         export.status = KadeSubjectAssistantExport.COMPLETE
