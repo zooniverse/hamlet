@@ -19,7 +19,6 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('subject_set_id', models.IntegerField()),
-                ('json', models.FileField(null=True, upload_to='ml_subject_assistant/')),
                 ('azure_url', models.CharField(max_length=512, null=True)),
                 ('service_job_url', models.URLField(null=True)),
             ],

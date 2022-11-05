@@ -66,6 +66,5 @@ class MLSubjectAssistantExport(StatusModel):
 
 class KadeSubjectAssistantExport(StatusModel):
     subject_set_id = models.IntegerField()
-    json = models.FileField(upload_to='ml_subject_assistant/', null=True)
     azure_url = models.CharField(max_length=512, null=True)
     service_job_url = models.URLField(max_length=200, null=True)
