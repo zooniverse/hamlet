@@ -286,9 +286,9 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: 6m
 spec:
   tls:
-  - hosts:
-    - hamlet.zooniverse.org
-    secretName: zooniverse-org-tls
+    - hosts:
+      - hamlet.zooniverse.org
+      secretName: zooniverse-org-tls
   rules:
     - host: hamlet.zooniverse.org
       http:
