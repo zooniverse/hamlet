@@ -97,7 +97,7 @@ spec:
             - name: DJANGO_ENV
               value: production
             - name: REDIS_URI
-              value: "redis://hamlet-redis"
+              value: "redis://hamlet-production-redis"
             - name: STATIC_ROOT
               value: "/static-assets/static/"
           envFrom:
@@ -173,7 +173,7 @@ spec:
             - name: DJANGO_ENV
               value: production
             - name: REDIS_URI
-              value: "redis://hamlet-redis"
+              value: "redis://hamlet-production-redis"
             - name: TMP_STORAGE_PATH
               value: "/export-tmp"
           envFrom:
@@ -207,7 +207,7 @@ metadata:
   name: hamlet-production-redis
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: azurefile
   resources:
     requests:
