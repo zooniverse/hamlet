@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: hamlet-nginx-conf-staging
+  name: hamlet-nginx-conf-production
 data:
   nginx.conf: |+
     upstream docker-hamlet {
@@ -9,7 +9,7 @@ data:
     }
 
     server {
-      server_name hamlet-staging.zooniverse.org
+      server_name hamlet.zooniverse.org
       include /etc/nginx/ssl.default.conf;
       gzip_types *;
 
@@ -35,43 +35,31 @@ data:
       }
     }
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: hamlet-staging-export-tmp
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: azurefile
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hamlet-staging-app
+  name: hamlet-production-app
   labels:
-    app: hamlet-staging-app
+    app: hamlet-production-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hamlet-staging-app
+      app: hamlet-production-app
   template:
     metadata:
       labels:
-        app: hamlet-staging-app
+        app: hamlet-production-app
     spec:
       containers:
-        - name: hamlet-staging-app
+        - name: hamlet-production-app
           image: ghcr.io/zooniverse/hamlet:__IMAGE_TAG__
           resources:
              requests:
                memory: "100Mi"
                cpu: "10m"
              limits:
-               memory: "500Mi"
+               memory: "1000Mi"
                cpu: "1000m"
           startupProbe:
             httpGet:
@@ -79,7 +67,7 @@ spec:
               port: 8080
               httpHeaders:
                  - name: Host
-                   value: "hamlet-staging.zooniverse.org"
+                   value: "hamlet.zooniverse.org"
             # wait 6 * 10 seconds(default periodSeconds) for the container to start
             # after this succeeds once the liveness probe takes over
             failureThreshold: 6
@@ -89,7 +77,7 @@ spec:
               port: 8080
               httpHeaders:
                  - name: Host
-                   value: "hamlet-staging.zooniverse.org"
+                   value: "hamlet.zooniverse.org"
             # allow a longer response time than 1s
             timeoutSeconds: 30
           readinessProbe:
@@ -98,7 +86,7 @@ spec:
               port: 8080
               httpHeaders:
                  - name: Host
-                   value: "hamlet-staging.zooniverse.org"
+                   value: "hamlet.zooniverse.org"
             # start checking for readiness after 20s (to serve traffic)
             initialDelaySeconds: 20
             # allow a longer response time than 1s
@@ -107,26 +95,18 @@ spec:
             - name: DB_SSL_MODE
               value: require
             - name: DJANGO_ENV
-              value: staging
+              value: production
             - name: REDIS_URI
-              value: "redis://hamlet-staging-redis"
+              value: "redis://hamlet-redis"
             - name: STATIC_ROOT
               value: "/static-assets/static/"
-            - name: ZOONIVERSE_API_ENDPOINT
-              value: "https://panoptes-staging.zooniverse.org"
-            - name: OAUTH_AUTHORIZATION_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
-            - name: OAUTH_ACCESS_TOKEN_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/token"
-            - name: OAUTH_REVOKE_TOKEN_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/revoke"
           envFrom:
             - secretRef:
-                name: hamlet-staging-conf
+                name: hamlet-production-conf
           volumeMounts:
             - name: static-assets
               mountPath: "/static-assets"
-        - name: hamlet-staging-nginx
+        - name: hamlet-nginx
           image: zooniverse/apps-nginx:xenial
           resources:
             requests:
@@ -141,7 +121,7 @@ spec:
               port: 80
               httpHeaders:
                  - name: Host
-                   value: "hamlet-staging.zooniverse.org"
+                   value: "hamlet.zooniverse.org"
             initialDelaySeconds: 10
           ports:
             - containerPort: 80
@@ -154,74 +134,68 @@ spec:
         - name: static-assets
           hostPath:
             # directory location on host node temp disk
-            path: /mnt/hamlet-staging-app-static-assets
+            path: /mnt/hamlet-production-app-static-assets
             type: DirectoryOrCreate
         - name: hamlet-nginx-conf
           configMap:
-            name: hamlet-nginx-conf-staging
+            name: hamlet-nginx-conf-production
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hamlet-staging-celery
+  name: hamlet-production-celery
   labels:
-    app: hamlet-staging-celery
+    app: hamlet-production-celery
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hamlet-staging-celery
+      app: hamlet-production-celery
   template:
     metadata:
       labels:
-        app: hamlet-staging-celery
+        app: hamlet-production-celery
     spec:
       containers:
-        - name: hamlet-staging-celery
+        - name: hamlet-production-celery
           image: ghcr.io/zooniverse/hamlet:__IMAGE_TAG__
           resources:
              requests:
                memory: "250Mi"
                cpu: "10m"
              limits:
-               memory: "500Mi"
-               cpu: "500m"
+               memory: "1000Mi"
+               cpu: "1000m"
           args: ["bash", "/usr/src/app/start_worker.sh"]
           env:
             - name: DB_SSL_MODE
               value: require
             - name: DJANGO_ENV
-              value: staging
+              value: production
             - name: REDIS_URI
-              value: "redis://hamlet-staging-redis"
+              value: "redis://hamlet-redis"
             - name: TMP_STORAGE_PATH
               value: "/export-tmp"
-            - name: ZOONIVERSE_API_ENDPOINT
-              value: "https://panoptes-staging.zooniverse.org"
-            - name: OAUTH_AUTHORIZATION_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
-            - name: OAUTH_ACCESS_TOKEN_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/token"
-            - name: OAUTH_REVOKE_TOKEN_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/revoke"
           envFrom:
             - secretRef:
-                name: hamlet-staging-conf
+                name: hamlet-production-conf
           volumeMounts:
-          - name: hamlet-staging-export-tmp
-            mountPath: "/export-tmp"
+            - name: hamlet-production-export-tmp
+              mountPath: "/export-tmp"
       volumes:
-      - name: hamlet-staging-export-tmp
-        persistentVolumeClaim:
-          claimName: hamlet-staging-export-tmp
+        - name: hamlet-production-export-tmp
+          hostPath:
+            # directory location on host node temp disk
+            path: /mnt/hamlet-production-app-export-tmp
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: hamlet-staging
+  name: hamlet-production
 spec:
   selector:
-    app: hamlet-staging-app
+    app: hamlet-production-app
   ports:
     - protocol: TCP
       port: 80
@@ -230,7 +204,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: hamlet-staging-redis
+  name: hamlet-production-redis
 spec:
   accessModes:
     - ReadWriteMany
@@ -242,20 +216,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hamlet-staging-redis
+  name: hamlet-production-redis
   labels:
-    app: hamlet-staging-redis
+    app: hamlet-production-redis
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: hamlet-staging-redis
+      app: hamlet-production-redis
   template:
     metadata:
       labels:
-        app: hamlet-staging-redis
+        app: hamlet-production-redis
     spec:
       tolerations:
         - key: "servicelife"
@@ -272,30 +246,30 @@ spec:
                 values:
                 - longlife
       containers:
-        - name: hamlet-staging-redis
+        - name: hamlet-production-redis
           image: redis
           resources:
              requests:
                memory: "20Mi"
                cpu: "10m"
              limits:
-               memory: "200Mi"
-               cpu: "500m"
+               memory: "250Mi"
+               cpu: "1000m"
           volumeMounts:
-          - name: hamlet-staging-redis-data
+          - name: hamlet-production-redis-data
             mountPath: "/data"
       volumes:
-      - name: hamlet-staging-redis-data
+      - name: hamlet-production-redis-data
         persistentVolumeClaim:
-          claimName: hamlet-staging-redis
+          claimName: hamlet-production-redis
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: hamlet-staging-redis
+  name: hamlet-production-redis
 spec:
   selector:
-    app: hamlet-staging-redis
+    app: hamlet-production-redis
   ports:
     - protocol: TCP
       port: 6379
@@ -312,17 +286,17 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: 6m
 spec:
   tls:
-    - hosts:
-      - hamlet-staging.zooniverse.org
-        secretName: zooniverse-org-tls
+  - hosts:
+    - hamlet.zooniverse.org
+    secretName: zooniverse-org-tls
   rules:
-    - host: hamlet-staging.zooniverse.org
+    - host: hamlet.zooniverse.org
       http:
         paths:
         - path: /
           pathType: Prefix
           backend:
             service:
-              name: hamlet-staging
+              name: hamlet-production
               port:
                 number: 80
