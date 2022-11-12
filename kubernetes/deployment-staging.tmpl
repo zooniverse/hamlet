@@ -115,11 +115,11 @@ spec:
             - name: ZOONIVERSE_API_ENDPOINT
               value: "https://panoptes-staging-app"
             - name: OAUTH_AUTHORIZATION_URL
-              value: "https://panoptes-staging-app/oauth/authorize"
+              value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
             - name: OAUTH_ACCESS_TOKEN_URL
-              value: "https://panoptes-staging-app/oauth/token"
+              value: "https://panoptes-staging.zooniverse.org/oauth/token"
             - name: OAUTH_REVOKE_TOKEN_URL
-              value: "https://panoptes-staging-app/oauth/revoke"
+              value: "https://panoptes-staging.zooniverse.org/oauth/revoke"
           envFrom:
             - secretRef:
                 name: hamlet-staging-conf
@@ -197,7 +197,7 @@ spec:
             - name: TMP_STORAGE_PATH
               value: "/export-tmp"
             - name: ZOONIVERSE_API_ENDPOINT
-              value: "https://panoptes-staging.zooniverse.org"
+              value: "https://panoptes-staging-app"
             - name: OAUTH_AUTHORIZATION_URL
               value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
             - name: OAUTH_ACCESS_TOKEN_URL
