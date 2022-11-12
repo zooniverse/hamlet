@@ -113,13 +113,13 @@ spec:
             - name: STATIC_ROOT
               value: "/static-assets/static/"
             - name: ZOONIVERSE_API_ENDPOINT
-              value: "https://panoptes-staging.zooniverse.org"
+              value: "https://panoptes-staging-app"
             - name: OAUTH_AUTHORIZATION_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/authorize"
+              value: "https://panoptes-staging-app/oauth/authorize"
             - name: OAUTH_ACCESS_TOKEN_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/token"
+              value: "https://panoptes-staging-app/oauth/token"
             - name: OAUTH_REVOKE_TOKEN_URL
-              value: "https://panoptes-staging.zooniverse.org/oauth/revoke"
+              value: "https://panoptes-staging-app/oauth/revoke"
           envFrom:
             - secretRef:
                 name: hamlet-staging-conf
