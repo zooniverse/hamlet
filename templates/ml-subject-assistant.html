@@ -37,7 +37,7 @@
             <b>{{ subject_set.id }} - {{ subject_set.display_name }}:</b> <input type="submit" value="Generate">
             {% if data_export.0 %}
               &nbsp;&middot;&nbsp;
-              {{ data_export.0.get_status_display }}
+              {{ data_export.0.status }}
             
               {% if data_export.0.get_status_display == 'Running' %}
               -- please refresh this page in one minute
