@@ -17,44 +17,31 @@
     </script>
     <h2>Downloads for <em>{{project.display_name}}</em></h2>
 
-    <h3>Instructions</h3>
+    <h3>AutoML – Interface with Google Cloud Storage</h3>
 
-    <p>This page will allow you to generate exports in the correct format for
-    Google Cloud Storage and AutoML.<p>
+    <p>Google Cloud Storage offers a service called AutoML that allows you to train models using image or video data without writing code or preparing data splits. These instructions will help you format your data for Google’s services after Zooniverse’s volunteers have labeled the images.<p>
 
     <ol>
         <li>
             <h4>Generate subject set export</h4>
-            <p>You must generate an export for each subject set you'll be
-                working with, even if your images are not hosted by the
-                Zooniverse.</p>
+            <p>In the Subject Set Export options below, click Generate to select the subject set for analysis. When it is ready, a link will appear next to the export button.</p>
         </li>
         <li>
             <h4>Transfer images to Google Cloud Storage</h4>
-            <p>Copy the subject set export URL(s) below into <a
-                href="https://cloud.google.com/storage-transfer/docs/">Google
-                Cloud Storage's transfer service</a>, to copy your images into
-                the storage bucket you'll be using for AutoML.</p>
+            <p>When the export is complete, copy the subject set export URL that appears next to the subject set into <a href="https://cloud.google.com/storage-transfer/docs/">Google Cloud Storage's transfer service</a> to copy your images into the storage bucket you’ll use for AutoML. Producing the export may take some time, especially if you have a large dataset, so please be patient and do not click multiple times.</p>
         </li>
         <li>
             <h4>Perform a Caesar subject reductions export</h4>
-            <p>Please ensure you've already generated a subject reductions
-                export in <a href="https://caesar.zooniverse.org/">Caesar</a>
-                or the workflow export will fail. The "most likely" labels from
-                Caesar are what you'll use to train your AutoML model.</p>
-        <li>
-            <h4>Generate workflow labels export</h4>
-            <p>This will export your Caesar labels for each subject image.</p>
-            <p>Enter the URI of your storage bucket, starting with
-                <code><strong>gs://</strong></code> and without a slash at the
-                end.
-            <p>Note that any subjects that were not included in an export in
-                step 1 will not be included in this export.</p>
+            <p>To prepare the data manifest, run a subject reductions export in <a href="https://caesar.zooniverse.org/">Caesar</a>. If you haven’t already, set up a Consensus reducer following these <a href="https://zooniverse.github.io/caesar/#creating-reducers">instructions</a>. Then create a new Data Request within Caesar to pull the “most likely” labels assigned by volunteers for model training.</p>
         </li>
         <li>
-            <h4>Generate AutoML model</h4>
-            <p>After you download your workflow export, upload it to Google
-                Cloud Storage in order to train your AutoML model.</p>
+            <h4>Generate workflow labels export</h4>
+            <p>Under Workflow labels export below, select the workflow from which you want to export your data, which should correspond with the workflow accessed in Caesar. Enter the URL of your Google storage, starting with <code><strong>gs://</strong></code> and without a slash at the end. </p>
+            <p>Note that any subjects not included in the step 1 export will not be included in this report. </p>
+        </li>
+        <li>
+            <h4>Train your AutoML model</h4>
+            <p>After you download the results for your workflow labels export, upload it to your Google Cloud Storage bucket in order to train your model. </p>
         </li>
     </ol>
 
