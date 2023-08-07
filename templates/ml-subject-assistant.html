@@ -4,24 +4,20 @@
 
 {% block content %}
 
-  <h2>Subject Assistant - Export Data to Machine Learning Service</h2>
+  <h2>Camera Trap Subject Assistant – Interface with MegaDetector</h2>
 
   <section class="info">
-    <p>
-      This section of the Hamlet service is designed to work with the <a href="https://subject-assistant.zooniverse.org/" target="_blank">Zooniverse ML Subject Assistant</a> web app, and allows you to <b>export your Subject Sets</b> from the project "{{ project.display_name }}" to an external Machine Learning Service to <b>identify animals/wildlife in your photos.</b> 
-    </p>
-
-    <p>If you're unsure what's going on here or what to do next, please read the introduction/explainers on the <a href="https://subject-assistant.zooniverse.org/" target="_blank">Zooniverse ML Subject Assistant</a> web app.</p>
+    <p>Most camera trap surveys have blank images containing no animals in them, which can be identified and cleared using the latest ML with no coding required. These instructions will help you run the MegaDetector model on Zooniverse and select which images to retain for volunteer review. </p>
 
     <ol>
-      <li>Choose a Subject Set whose photos you want to export.</li>
-      <li>Click 'Generate' to submit your Subject Set to the external Machine Learning Service.</li>
-      <li>Wait a minute before refreshing the page.</li>
-      <li>Click on 'View the results on the Subject Assistant' to be taken back to the Subject Assistant web app.</li>
-      <li>The Subject Assistant web app will guide you through the rest of the process.</li>
+      <li>Choose a subject set below and click <strong>Generate</strong> to submit your images to the external Machine Learning Service. </li>
+      <li>Wait several minutes and refresh the page to see if your ML Task ID has been generated. (Note that your results may not be ready as soon as the link appears. You may be taken back to the Subject Assistant but will have to wait a bit longer to fetch the results.)</li>
+      <li>Click on the ML Task ID link once it appears to return to Subject Assistant (Step 2) and view your results. </li>
+      <li>At the bottom of the page, click the Fetch button to see your results. If the results are not immediately available, wait a few minutes and try clicking Fetch again. </li>
+      <li>The Subject Assistant – Step 2 instructions will guide you through the rest of the process. </li>
     </ol>
     
-    <p>⚠️ Please note that it may take a while for your job to be processed. It will take only <b>a few minutes</b> for your Subject Set to be exported to the external ML Service, but it can take <b>an hour or more</b> for the external ML Service to identify all the animals/wildlife in your photos.</p>
+    <p>⚠️ Please note that it may take a while for your job to be processed. It will take only <strong>a few minutes</strong> for your subject set to be exported to the external ML service, but it may take <strong>an hour or more</strong> for MegaDetector to review and label all of your photos.</p>
   </section>
 
   <h3>Subject Sets for {{ project.display_name }}</h3>

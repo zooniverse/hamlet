@@ -7,7 +7,7 @@ RUN apt-get update \
     build-essential \
     libffi-dev \
     libpq-dev \
-    netcat \
+    netcat-openbsd \
     postgresql-client \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
