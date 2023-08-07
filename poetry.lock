@@ -2082,24 +2082,25 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "panoptes-client"
-version = "1.4.0"
-description = ""
+version = "1.6.1"
+description = "This package is the Python SDK for Panoptes, the platform behind the Zooniverse. This module is intended to allow programmatic management of projects, providing high level access to the API for common project management tasks."
 optional = false
 python-versions = "*"
 files = [
-    {file = "panoptes_client-1.4.0.tar.gz", hash = "sha256:7219f32ddf12c34f697ece2645a467c261c47de1ac288a78227566ae56f76e8a"},
+    {file = "panoptes_client-1.6.1-py3-none-any.whl", hash = "sha256:d3b62d9588084d6ceb63e73419b0a2976eee00af05d97bb8d09077943c5b7dc2"},
+    {file = "panoptes_client-1.6.1.tar.gz", hash = "sha256:cbb20d524caf235d5b88a5b8c89a4119d028b3d5561e7358a0122f914976669c"},
 ]
 
 [package.dependencies]
 future = ">=0.16,<0.19"
 python-magic = ">=0.4,<0.5"
 redo = ">=1.7"
-requests = ">=2.4.2,<2.26"
+requests = ">=2.4.2,<2.29"
 six = ">=1.9"
 
 [package.extras]
 docs = ["sphinx"]
-testing = ["mock (>=2.0,<4.1)"]
+testing = ["mock (>=2.0,<5.2)"]
 
 [[package]]
 name = "pluggy"
