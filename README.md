@@ -1,5 +1,7 @@
 # Hosted AutoML Export Transformer (Hamlet)
 
+Hamlet is a website that connects Zooniverse data from Panoptes with external data services, e,g. sending a camera trap project's animal-filled photos to an animal-identifying machine-learning system.
+
 ## Auto ML Export
 
 ## Subject Assistant
@@ -21,7 +23,7 @@ The Subject Assistant requires the following external systems:
 - Machine Learning Service - in this case, powered by Microsoft.
 - an Azure Storage Container - works in conjunction with the ML Service, which requires "subject manifest" files to be stored on Azure.
 
-As of Dec 2019, these external services are provided by our friends in Microsoft.
+As of late 2022, these services are maintained by the Zooniverse team.
 
 ### Environmental Variables
 
@@ -71,11 +73,43 @@ Use docker & docker-compose to setup a development env.
 1. Run `docker-compose build` to build the app container.
 2. Run the tests `docker-compose run -T --rm app bundle exec pytest --cov=hamlet`
 
-Alternatively yiou can use docker & compose to run an interactive bash shell for development and testing
+Alternatively you can use docker & compose to run an interactive bash shell for development and testing
 
 1. Run `docker-compose run --service-ports --rm app bash` to start the containers
 2. Run `pytest --cov=hamlet` to run the test suite in that shell (sadly this system has no tests :sadpanda:)
 3. Or `./start_server.sh` to run the server (see Pipfile)
+
+### Troubleshooting
+
+**I can't login on local development**
+
+Problem:
+- You're able to run `docker-compose build ; docker-compose up`, and you can view Hamlet on local development on `http://localhost:8080`
+- However, when you click on the "Login with Zooniverse" button and provide your details on the Panoptes login page, you
+
+Analysis:
+- It's likely that your instance of Hamlet is missing the `PANOPTES_APPLICATION_ID` and `PANOPTES_SECRET` environment variables.
+- These env vars are required to tell Panoptes _which oAuth application_ you're logging into.
+
+Solution:
+- Go to [Panoptes's oAuth applications list,](https://panoptes.zooniverse.org/oauth/applications) find the Hamlet app, and copy the Application ID and Secret
+- Add these to your local development Docker's environment variables, as `PANOPTES_APPLICATION_ID` and `PANOPTES_SECRET`
+  - This can be done easily by creating a `.env` file in the root folder of your `hamlet` repo.
+
+Related issue: [479](https://github.com/zooniverse/hamlet/issues/479)
+
+**The database won't start on local development**
+
+Problem:
+- When you run `docker-compose build ; docker-compose up`, you notice that the PostgreSQL database isn't running. 
+- There's probably a few error message in the console: `app_1` will continuously complain that it's trying (and failing) to find the PostgreSQL database, while `postgres_1` might say something about "can't initialise due to incompatible database".
+
+Analysis:
+- It's possible that your existing local PostgreSQL database (i.e. the `/postgres_data` folder) was built on an older version of PostgreSQL, and recent updates to Hamlet have upgraded the PostgreSQL that Hamlet uses, causing an incompatibility.
+
+Solution:
+- Check if you have an existing `/postgres_data` folder in your local `hamlet` repo.
+- If yes, delete it. The next time you start Hamlet, the database will be rebuilt with the latest version. 
 
 ### Useful application scripts
 
