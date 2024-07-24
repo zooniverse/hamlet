@@ -151,7 +151,7 @@ def ml_subject_assistant_export_to_microsoft_pt4_make_ml_request(shareable_file_
         camera_traps_api_host = os.getenv('CAMERA_TRAPS_API_SERVICE_HOST')
         if camera_traps_api_host:
           camera_traps_api_host_path = os.getenv(
-              'CAMERA_TRAPS_API_SERVICE_HOST_PATH', '/v4/camera-trap/detection-batch'
+              'CAMERA_TRAPS_API_SERVICE_HOST_PATH', '/v5/camera-trap/detection-batch'
           )
           ml_service_url = 'http://' + camera_traps_api_host + camera_traps_api_host_path
 
